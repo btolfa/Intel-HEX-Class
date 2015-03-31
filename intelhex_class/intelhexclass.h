@@ -888,36 +888,7 @@ class intelhex {
 
             return found;
         }
-        
-        /**********************************************************************/
-        /*! \brief Inserts desired byte at the current address pointer.
-        *
-        * Inserts byte of data at the current address pointer
-        *
-        * \param    data - data byte to be inserted
-        *
-        * \sa startAddress()
-        ***********************************************************************/
-        bool insertData(std::uint8_t data);
-        bool insertData(std::uint8_t data, std::uint32_t address);
-        
-        void overwriteData(std::uint8_t data);
-        void overwriteData(std::uint8_t data, std::uint32_t address);
-        
-        bool blankFill(std::uint8_t data);
-        
-        bool blankFill(std::uint8_t * const data, std::uint32_t sizeOfData);
-        
-        void blankFill(std::uint8_t * const data, std::uint32_t sizeOfData,
-                       std::uint32_t endAddress);
-        
-        bool blankFillRandom();
-        
-        void blankFillRandom(std::uint32_t endAddress);
-        
-        bool blankFillAddressLowByte();
-        
-        void blankFillAddressLowByte(std::uint32_t endAddress);
+
         
         /**********************************************************************/
         /*! \brief Returns number of unread warning messages.
