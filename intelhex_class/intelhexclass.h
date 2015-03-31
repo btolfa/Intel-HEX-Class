@@ -78,9 +78,10 @@
 * application it is possible to create content, analyse content and even compare
 * the content of files with one another.
 *******************************************************************************/
-class intelhex {
-    /**********************************************************************/
-    /*! \brief Output stream overload operator.
+namespace intelhex {
+    class intelhex {
+        /**********************************************************************/
+        /*! \brief Output stream overload operator.
     *
     * Operator overloaded to encode any data held in memory into the Intel
     * HEX format for storage on disk
@@ -94,11 +95,11 @@ class intelhex {
     *
     * \retval           - pointer to output stream
     ***********************************************************************/
-    friend std::ostream &operator<<(std::ostream &dataOut,
-                                    intelhex &ihLocal);
+        friend std::ostream &operator<<(std::ostream &dataOut,
+                                        intelhex &ihLocal);
 
-    /**********************************************************************/
-    /*! \brief Input stream overload operator.
+        /**********************************************************************/
+        /*! \brief Input stream overload operator.
     *
     * Operator overloaded to decode data streamed in from a file in the
     * Intel HEX format into memory
@@ -111,30 +112,30 @@ class intelhex {
     *
     * \retval           - pointer to input stream
     ***********************************************************************/
-    friend std::istream &operator>>(std::istream &dataIn,
-                                    intelhex &ihLocal);
+        friend std::istream &operator>>(std::istream &dataIn,
+                                        intelhex &ihLocal);
 
-private:
-    /**********************************************************************/
-    /*! \brief Container for decoded Intel HEX content.
+    private:
+        /**********************************************************************/
+        /*! \brief Container for decoded Intel HEX content.
     *
     * STL map holding the addresses found in the Intel HEX file and the
     * associated data byte stored at that address
     ***********************************************************************/
-    std::map<std::uint32_t, std::uint8_t> ihContent;
+        std::map<std::uint32_t, std::uint8_t> ihContent;
 
-    /**********************************************************************/
-    /*! \brief Iterator for the container holding the decoded Intel HEX
+        /**********************************************************************/
+        /*! \brief Iterator for the container holding the decoded Intel HEX
     *        content.
     *
     * This iterator is used by the class to point to the location in memory
     * currently being used to read or write data. If no file has been
     * loaded into memory, it points to the start of ihContent.
     ***********************************************************************/
-    std::map<std::uint32_t, std::uint8_t>::iterator ihIterator;
+        std::map<std::uint32_t, std::uint8_t>::iterator ihIterator;
 
-    /**********************************************************************/
-    /*! \brief Pair for the container holding the decoded Intel HEX content.
+        /**********************************************************************/
+        /*! \brief Pair for the container holding the decoded Intel HEX content.
     *
     * This is used to acquire the result of an attempt to insert new data
     * into ihContent. Since the ihContent is a map STL, it can't allow
@@ -142,10 +143,10 @@ private:
     * can ensure that no address in a file is falsely assigned data more
     * than once.
     ***********************************************************************/
-    std::pair<std::map<std::uint32_t, std::uint8_t>::iterator, bool> ihReturn;
+        std::pair<std::map<std::uint32_t, std::uint8_t>::iterator, bool> ihReturn;
 
-    /**********************************************************************/
-    /*! \brief Stores segment base address of Intel HEX file.
+        /**********************************************************************/
+        /*! \brief Stores segment base address of Intel HEX file.
     *
     * The segment base address is a 32-bit address to which the current
     * load offset (as found in a Data Record line of the Intel HEX file) is
@@ -156,10 +157,10 @@ private:
     * and encoding in the operator<< and operator>> class member friend
     * functions.
     ***********************************************************************/
-    std::uint32_t segmentBaseAddress;
+        std::uint32_t segmentBaseAddress;
 
-    /**********************************************************************/
-    /*! \brief Stores the content of the CS/IP Registers, if used.
+        /**********************************************************************/
+        /*! \brief Stores the content of the CS/IP Registers, if used.
     *
     * Used to store the content of the CS and IS Register for HEX files
     * created for x286 or earlier Intel processors. This information is
@@ -174,14 +175,14 @@ private:
     *
     * \sa getStartSegmentAddress(), setStartSegmentAddress()
     ***********************************************************************/
-    struct {
-        std::uint16_t csRegister;
-        std::uint16_t ipRegister;
-        bool exists;
-    } startSegmentAddress;
+        struct {
+            std::uint16_t csRegister;
+            std::uint16_t ipRegister;
+            bool exists;
+        } startSegmentAddress;
 
-    /**********************************************************************/
-    /*! \brief Stores the content of the EIP Register, if used.
+        /**********************************************************************/
+        /*! \brief Stores the content of the EIP Register, if used.
     *
     * Used to store the content of the EIP Register for HEX files created
     * for x386 Intel processors. This information is retrieved from the
@@ -195,14 +196,14 @@ private:
     *
     * \sa getStartLinearAddress(), setStartLinearAddress()
     ***********************************************************************/
-    struct {
-        std::uint32_t eipRegister;
-        bool exists;
-    } startLinearAddress;
+        struct {
+            std::uint32_t eipRegister;
+            bool exists;
+        } startLinearAddress;
 
 
-    /**********************************************************************/
-    /*! \brief Structure to hold warning messages.
+        /**********************************************************************/
+        /*! \brief Structure to hold warning messages.
     *
     * Holds warning messages generated during encoding/decoding process and
     * number of messages currently present in system
@@ -211,13 +212,13 @@ private:
     * \param    noOfWarnings    - no of warning messages still present in
     *                             the list
     ***********************************************************************/
-    struct {
-        std::list<std::string> ihWarnings;
-        std::size_t noOfWarnings;
-    } msgWarning;
+        struct {
+            std::list<std::string> ihWarnings;
+            std::size_t noOfWarnings;
+        } msgWarning;
 
-    /**********************************************************************/
-    /*! \brief Structure to hold error messages.
+        /**********************************************************************/
+        /*! \brief Structure to hold error messages.
     *
     * Holds error messages generated during encoding/decoding process and
     * number of messages currently present in system
@@ -226,60 +227,39 @@ private:
     * \param    noOferrors      - no of error messages still present in the
     *                             list
     ***********************************************************************/
-    struct {
-        std::list<std::string> ihErrors;
-        std::size_t noOfErrors;
-    } msgError;
+        struct {
+            std::list<std::string> ihErrors;
+            std::size_t noOfErrors;
+        } msgError;
 
-    /**********************************************************************/
-    /*! \brief Note that EOF record is found.
+        /**********************************************************************/
+        /*! \brief Note that EOF record is found.
     *
     * Used to note that the EOF record was found in order to ensure that it
     * doesn't appear twice during encoding.
     ***********************************************************************/
-    bool foundEof;
+        bool foundEof;
 
-    /**********************************************************************/
-    /*! \brief Select verbose mode.
+        /**********************************************************************/
+        /*! \brief Select verbose mode.
     *
     * Used during development to display messages as the incoming data
     * stream is decoded
     ***********************************************************************/
-    bool verbose;
+        bool verbose;
 
-    /**********************************************************************/
-    /*! \brief Select segment address mode.
+        /**********************************************************************/
+        /*! \brief Select segment address mode.
     *
     * If true, use the segment addressing mode when encoding files.
     * otherwise the default linear address mode will be used. Please refer
     * to Intel's Hexadecimal Object File Format Specifiation for further
     * information.
     ***********************************************************************/
-    bool segmentAddressMode;
+        bool segmentAddressMode;
 
-    /***********************************************************************
-    * \brief Converts a 2 char string to its HEX value.
-    *
-    * Converts a two byte string to its equivalent value in hexadecimal
-    *
-    * \param        value   - a two character, valid ASCII representation of
-    *                         a hexadecimal value
-    *
-    * \retval       'value' valid   - 8-bit value
-    * \retval       'value' invalid - 0x00 and calls addWarning()
-    *
-    * \note
-    * This function will post a warning message using the warning handling
-    * system addWarning() if:
-    *   -# The string contains anything other that exactly two characters
-    *   -# The string contains anything other than the characters 0-9, a-f
-    *      and A-F
-    *
-    * \sa ulToHexString(), ucToHexString(), ulToString()
-    ***********************************************************************/
-    std::uint8_t stringToHex(std::string value);
 
-    /***********************************************************************
+        /***********************************************************************
     * \brief Converts an std::uint32_t to a string in HEX format.
     *
     * Takes the received paramter and converts it into its equivalent value
@@ -296,10 +276,10 @@ private:
     * \sa
     * stringToHex(), ucToHexString(), ulToString()
     ***********************************************************************/
-    std::string ulToHexString(std::uint32_t value);
+        std::string ulToHexString(std::uint32_t value);
 
-    /**********************************************************************/
-    /*! \brief Converts an std::uint8_t to a string in HEX format.
+        /**********************************************************************/
+        /*! \brief Converts an std::uint8_t to a string in HEX format.
     *
     * Takes the received paramter and converts it into its equivalent value
     * represented in ASCII and formatted in hexadecimal. Return value is a
@@ -315,26 +295,10 @@ private:
     * \sa
     * stringToHex(), ulToHexString(), ulToString()
     ***********************************************************************/
-    std::string ucToHexString(std::uint8_t value);
+        std::string ucToHexString(std::uint8_t value);
 
-    /**********************************************************************/
-    /*! \brief Converts an std::uint32_t to a string in DEC format.
-    *
-    * Takes the received paramter and converts it into its equivalent value
-    * represented in ASCII and formatted in decimal. Return value will never
-    * be longer than a 48 character long string.
-    *
-    * \param        value   - value to be converted
-    *
-    * \retval               - ASCII string representation of value
-    *
-    * \sa
-    * stringToHex(), ulToHexString(), ucToHexString()
-    ***********************************************************************/
-    std::string ulToString(std::uint32_t value);
-
-    /**********************************************************************/
-    /*! \brief Decodes the data content of a data record.
+        /**********************************************************************/
+        /*! \brief Decodes the data content of a data record.
     *
     * Takes the data element of a data record in string format, converts
     * each 2 char element into a single byte and then inserts that byte of
@@ -348,28 +312,28 @@ private:
     *                         the first byte in this record
     * \param data           - The data content of the record in a string
     ***********************************************************************/
-    void decodeDataRecord(std::uint8_t recordLength,
-                          std::uint32_t loadOffset,
-                          std::string::const_iterator data);
+        void decodeDataRecord(std::uint8_t recordLength,
+                              std::uint32_t loadOffset,
+                              std::string::const_iterator data);
 
-    /**********************************************************************/
-    /*! \brief Add a warning message to the warning message list.
+        /**********************************************************************/
+        /*! \brief Add a warning message to the warning message list.
     *
     *
     * \param    warningMessage - the text to be added for this warning
     ***********************************************************************/
-    void addWarning(std::string warningMessage);
+        void addWarning(std::string warningMessage);
 
-    /**********************************************************************/
-    /*! \brief Add an error message to the error message list.
+        /**********************************************************************/
+        /*! \brief Add an error message to the error message list.
     *
     * \param    errorMessage - the text to be added for this error
     ***********************************************************************/
-    void addError(std::string errorMessage);
+        void addError(std::string errorMessage);
 
-public:
-    /**********************************************************************/
-    /*! \brief intelhex Class Constructor.
+    public:
+        /**********************************************************************/
+        /*! \brief intelhex Class Constructor.
     *
     * Important initialisation steps performed here:
     * - clear segment base address to zero
@@ -379,71 +343,71 @@ public:
     * - set verbode mode to 'false' (default)
     * - initialise class ihIterator
     ***********************************************************************/
-    intelhex() {
-        /* Initialise the segment base address to zero                    */
-        segmentBaseAddress = 0;
-        /* Clear content of register variables used with the 'Start Segment'
+        intelhex() {
+            /* Initialise the segment base address to zero                    */
+            segmentBaseAddress = 0;
+            /* Clear content of register variables used with the 'Start Segment'
         *  and 'Start Linear' address records                             */
-        startSegmentAddress.ipRegister = 0;
-        startSegmentAddress.csRegister = 0;
-        startSegmentAddress.exists = false;
-        startLinearAddress.eipRegister = 0;
-        startLinearAddress.exists = false;
-        /* Set up error and warning handling variables                    */
-        msgWarning.noOfWarnings = 0;
-        msgError.noOfErrors = 0;
-        /* Note that the EOF record has not been found yet                */
-        foundEof = false;
-        /* Set verbose mode to off                                        */
-        verbose = false;
-        /* Set segment address mode to false (default)                    */
-        segmentAddressMode = false;
-        /* Ensure ihContent is cleared and point ihIterator at it         */
-        ihContent.clear();
-        ihContent.begin();
-        ihIterator = ihContent.begin();
-    }
+            startSegmentAddress.ipRegister = 0;
+            startSegmentAddress.csRegister = 0;
+            startSegmentAddress.exists = false;
+            startLinearAddress.eipRegister = 0;
+            startLinearAddress.exists = false;
+            /* Set up error and warning handling variables                    */
+            msgWarning.noOfWarnings = 0;
+            msgError.noOfErrors = 0;
+            /* Note that the EOF record has not been found yet                */
+            foundEof = false;
+            /* Set verbose mode to off                                        */
+            verbose = false;
+            /* Set segment address mode to false (default)                    */
+            segmentAddressMode = false;
+            /* Ensure ihContent is cleared and point ihIterator at it         */
+            ihContent.clear();
+            ihContent.begin();
+            ihIterator = ihContent.begin();
+        }
 
-    /**********************************************************************/
-    /*! \brief intelhex Class Deconstructor.
+        /**********************************************************************/
+        /*! \brief intelhex Class Deconstructor.
     *
     * Currently the deconstructor is intentially empty.
     ***********************************************************************/
-    ~intelhex() = default;
+        ~intelhex() = default;
 
-    /**********************************************************************/
-    /*! \brief intelhex Class Copy Constructor.
+        /**********************************************************************/
+        /*! \brief intelhex Class Copy Constructor.
     *
     * Copy constructor copies all essential elements for the class.
     ***********************************************************************/
-    intelhex(const intelhex &ihSource) {
-        /* Initialise the segment base address                            */
-        segmentBaseAddress = ihSource.segmentBaseAddress;
-        /* Initialise content of register variables used with the 'Start Segment'
+        intelhex(const intelhex &ihSource) {
+            /* Initialise the segment base address                            */
+            segmentBaseAddress = ihSource.segmentBaseAddress;
+            /* Initialise content of register variables used with the 'Start Segment'
         *  and 'Start Linear' address records                             */
-        startSegmentAddress.ipRegister = ihSource.startSegmentAddress.ipRegister;
-        startSegmentAddress.csRegister = ihSource.startSegmentAddress.csRegister;
-        startSegmentAddress.exists = ihSource.startSegmentAddress.exists;
-        startLinearAddress.eipRegister = ihSource.startLinearAddress.eipRegister;
-        startLinearAddress.exists = ihSource.startLinearAddress.exists;
-        /* Set up error and warning handling variables                    */
-        msgWarning.noOfWarnings = ihSource.msgWarning.noOfWarnings;
-        msgWarning.ihWarnings = ihSource.msgWarning.ihWarnings;
-        msgError.noOfErrors = ihSource.msgError.noOfErrors;
-        msgError.ihErrors = ihSource.msgError.ihErrors;
-        /* Note that the EOF record has not been found yet                */
-        foundEof = ihSource.foundEof;
-        /* Set verbose mode to off                                        */
-        verbose = ihSource.verbose;
-        /* Set segment address mode to false (default)                    */
-        segmentAddressMode = ihSource.segmentAddressMode;
-        /* Copy HEX file content variables                                */
-        ihContent = ihSource.ihContent;
-        ihIterator = ihSource.ihIterator;
-    }
+            startSegmentAddress.ipRegister = ihSource.startSegmentAddress.ipRegister;
+            startSegmentAddress.csRegister = ihSource.startSegmentAddress.csRegister;
+            startSegmentAddress.exists = ihSource.startSegmentAddress.exists;
+            startLinearAddress.eipRegister = ihSource.startLinearAddress.eipRegister;
+            startLinearAddress.exists = ihSource.startLinearAddress.exists;
+            /* Set up error and warning handling variables                    */
+            msgWarning.noOfWarnings = ihSource.msgWarning.noOfWarnings;
+            msgWarning.ihWarnings = ihSource.msgWarning.ihWarnings;
+            msgError.noOfErrors = ihSource.msgError.noOfErrors;
+            msgError.ihErrors = ihSource.msgError.ihErrors;
+            /* Note that the EOF record has not been found yet                */
+            foundEof = ihSource.foundEof;
+            /* Set verbose mode to off                                        */
+            verbose = ihSource.verbose;
+            /* Set segment address mode to false (default)                    */
+            segmentAddressMode = ihSource.segmentAddressMode;
+            /* Copy HEX file content variables                                */
+            ihContent = ihSource.ihContent;
+            ihIterator = ihSource.ihIterator;
+        }
 
-    /**********************************************************************/
-    /*! \brief intelhex Class Assignment Operator.
+        /**********************************************************************/
+        /*! \brief intelhex Class Assignment Operator.
     *
     * Implements the assignment operator so that the content of the Intel
     * HEX file in memory can be copied to another 'intelhex' variable.
@@ -455,94 +419,94 @@ public:
     *
     * \retval   pointer to variable to which value is to be assigned
     ***********************************************************************/
-    intelhex &operator=(const intelhex &ihSource) {
-        /* Check that we are not trying to assign ourself to ourself      */
-        /* i.e. are the source/destination addresses the same like        */
-        /* myData = myData;                                               */
-        if (this == &ihSource)
-            return *this;
+        intelhex &operator=(const intelhex &ihSource) {
+            /* Check that we are not trying to assign ourself to ourself      */
+            /* i.e. are the source/destination addresses the same like        */
+            /* myData = myData;                                               */
+            if (this == &ihSource)
+                return *this;
 
-        /* Initialise the segment base address                            */
-        segmentBaseAddress = ihSource.segmentBaseAddress;
-        /* Initialise content of register variables used with the 'Start Segment'
+            /* Initialise the segment base address                            */
+            segmentBaseAddress = ihSource.segmentBaseAddress;
+            /* Initialise content of register variables used with the 'Start Segment'
         *  and 'Start Linear' address records                             */
-        startSegmentAddress.ipRegister = ihSource.startSegmentAddress.ipRegister;
-        startSegmentAddress.csRegister = ihSource.startSegmentAddress.csRegister;
-        startSegmentAddress.exists = ihSource.startSegmentAddress.exists;
-        startLinearAddress.eipRegister = ihSource.startLinearAddress.eipRegister;
-        startLinearAddress.exists = ihSource.startLinearAddress.exists;
-        /* Set up error and warning handling variables                    */
-        msgWarning.noOfWarnings = ihSource.msgWarning.noOfWarnings;
-        msgWarning.ihWarnings = ihSource.msgWarning.ihWarnings;
-        msgError.noOfErrors = ihSource.msgError.noOfErrors;
-        msgError.ihErrors = ihSource.msgError.ihErrors;
-        /* Note that the EOF record has not been found yet                */
-        foundEof = ihSource.foundEof;
-        /* Set verbose mode to off                                        */
-        verbose = ihSource.verbose;
-        /* Set segment address mode to false (default)                    */
-        segmentAddressMode = ihSource.segmentAddressMode;
-        /* Copy HEX file content variables                                */
-        ihContent = ihSource.ihContent;
-        ihIterator = ihSource.ihIterator;
+            startSegmentAddress.ipRegister = ihSource.startSegmentAddress.ipRegister;
+            startSegmentAddress.csRegister = ihSource.startSegmentAddress.csRegister;
+            startSegmentAddress.exists = ihSource.startSegmentAddress.exists;
+            startLinearAddress.eipRegister = ihSource.startLinearAddress.eipRegister;
+            startLinearAddress.exists = ihSource.startLinearAddress.exists;
+            /* Set up error and warning handling variables                    */
+            msgWarning.noOfWarnings = ihSource.msgWarning.noOfWarnings;
+            msgWarning.ihWarnings = ihSource.msgWarning.ihWarnings;
+            msgError.noOfErrors = ihSource.msgError.noOfErrors;
+            msgError.ihErrors = ihSource.msgError.ihErrors;
+            /* Note that the EOF record has not been found yet                */
+            foundEof = ihSource.foundEof;
+            /* Set verbose mode to off                                        */
+            verbose = ihSource.verbose;
+            /* Set segment address mode to false (default)                    */
+            segmentAddressMode = ihSource.segmentAddressMode;
+            /* Copy HEX file content variables                                */
+            ihContent = ihSource.ihContent;
+            ihIterator = ihSource.ihIterator;
 
-        return *this;
-    }
+            return *this;
+        }
 
-    /**********************************************************************/
-    /*! \brief Overloaded prefix increment operator
+        /**********************************************************************/
+        /*! \brief Overloaded prefix increment operator
     *
     * Overloads the prefix increment operator to move interal iterator to
     * next entry in the ihContent map
     *
     ***********************************************************************/
-    intelhex &operator++() {
-        ++ihIterator;
+        intelhex &operator++() {
+            ++ihIterator;
 
-        return (*this);
-    }
+            return (*this);
+        }
 
-    /**********************************************************************/
-    /*! \brief Overloaded postfix increment operator
+        /**********************************************************************/
+        /*! \brief Overloaded postfix increment operator
     *
     * Overloads the postfix increment operator to move interal iterator to
     * next entry in the ihContent map
     *
     ***********************************************************************/
-    const intelhex operator++(int) {
-        intelhex tmp(*this);
-        ++(*this);
-        return (tmp);
-    }
+        const intelhex operator++(int) {
+            intelhex tmp(*this);
+            ++(*this);
+            return (tmp);
+        }
 
-    /**********************************************************************/
-    /*! \brief Overloaded prefix decrement operator
+        /**********************************************************************/
+        /*! \brief Overloaded prefix decrement operator
     *
     * Overloads the prefix decrement operator to move interal iterator to
     * previous entry in the ihContent map
     *
     ***********************************************************************/
-    intelhex &operator--() {
-        --ihIterator;
+        intelhex &operator--() {
+            --ihIterator;
 
-        return (*this);
-    }
+            return (*this);
+        }
 
-    /**********************************************************************/
-    /*! \brief Overloaded postfix decrement operator
+        /**********************************************************************/
+        /*! \brief Overloaded postfix decrement operator
     *
     * Overloads the postfix decrement operator to move interal iterator to
     * previous entry in the ihContent map
     *
     ***********************************************************************/
-    const intelhex operator--(int) {
-        intelhex tmp(*this);
-        --(*this);
-        return (tmp);
-    }
+        const intelhex operator--(int) {
+            intelhex tmp(*this);
+            --(*this);
+            return (tmp);
+        }
 
-    /**********************************************************************/
-    /*! \brief Moves the address pointer to the first available address.
+        /**********************************************************************/
+        /*! \brief Moves the address pointer to the first available address.
     *
     * The address pointer will be moved to the first available address in
     * memory of the decoded file or of the data the user has inserted into
@@ -553,14 +517,14 @@ public:
     * \note This function has no effect if no file has been as yet decoded
     * and no data has been inserted into memory.
     ***********************************************************************/
-    void begin() {
-        if (ihContent.size() != 0) {
-            ihIterator = ihContent.begin();
+        void begin() {
+            if (ihContent.size() != 0) {
+                ihIterator = ihContent.begin();
+            }
         }
-    }
 
-    /**********************************************************************/
-    /*! \brief Moves the address pointer to the last available address.
+        /**********************************************************************/
+        /*! \brief Moves the address pointer to the last available address.
     *
     * The address pointer will be moved to the last available address in
     * memory of the decoded file or of the data the user has inserted into
@@ -571,72 +535,72 @@ public:
     * \note This function has no effect if no file has been as yet decoded
     * and no data has been inserted into memory.
     ***********************************************************************/
-    void end() {
-        if (!ihContent.empty()) {
-            ihIterator = ihContent.end();
-            --ihIterator;
-        }
-    }
-
-    /**********************************************************************/
-    /*! \brief Checks if we have reached end of available data
-    *
-    * The internal pointer is checked to see if we have reached the end of
-    * the data held in memory
-    *
-    * \sa operator++(), operator++(int), operator--(), operator--(int),
-    * empty()
-    *
-    * \retval true  - reached the end of the Intel HEX data in memory or no
-    *                 data in memory yet.
-    * \retval false - end of Intel HEX data in memory not yet reached.
-    *
-    * \note This function has no effect if no file has been as yet decoded
-    * and no data has been inserted into memory.
-    ***********************************************************************/
-    std::size_t size() {
-        return ihContent.size();
-    }
-
-    /**********************************************************************/
-    /*! \brief Checks if we have reached end of available data
-    *
-    * The internal pointer is checked to see if we have reached the end of
-    * the data held in memory
-    *
-    * \sa operator++(), operator++(int), operator--(), operator--(int),
-    * empty()
-    *
-    * \retval true  - reached the end of the Intel HEX data in memory or no
-    *                 data in memory yet.
-    * \retval false - end of Intel HEX data in memory not yet reached.
-    *
-    * \note This function has no effect if no file has been as yet decoded
-    * and no data has been inserted into memory.
-    ***********************************************************************/
-    bool endOfData() {
-        /* Return true if there is no data anyway                         */
-        bool result = true;
-
-        if (!ihContent.empty()) {
-            std::map<std::uint32_t, std::uint8_t>::iterator it \
- = ihContent.end();
-
-            --it;
-
-            if (it != ihIterator) {
-                result = false;
+        void end() {
+            if (!ihContent.empty()) {
+                ihIterator = ihContent.end();
+                --ihIterator;
             }
         }
-        return result;
-    }
 
-    bool empty() {
-        return ihContent.empty();
-    }
+        /**********************************************************************/
+        /*! \brief Checks if we have reached end of available data
+    *
+    * The internal pointer is checked to see if we have reached the end of
+    * the data held in memory
+    *
+    * \sa operator++(), operator++(int), operator--(), operator--(int),
+    * empty()
+    *
+    * \retval true  - reached the end of the Intel HEX data in memory or no
+    *                 data in memory yet.
+    * \retval false - end of Intel HEX data in memory not yet reached.
+    *
+    * \note This function has no effect if no file has been as yet decoded
+    * and no data has been inserted into memory.
+    ***********************************************************************/
+        std::size_t size() {
+            return ihContent.size();
+        }
 
-    /**********************************************************************/
-    /*! \brief Moves the address pointer to the desired address.
+        /**********************************************************************/
+        /*! \brief Checks if we have reached end of available data
+    *
+    * The internal pointer is checked to see if we have reached the end of
+    * the data held in memory
+    *
+    * \sa operator++(), operator++(int), operator--(), operator--(int),
+    * empty()
+    *
+    * \retval true  - reached the end of the Intel HEX data in memory or no
+    *                 data in memory yet.
+    * \retval false - end of Intel HEX data in memory not yet reached.
+    *
+    * \note This function has no effect if no file has been as yet decoded
+    * and no data has been inserted into memory.
+    ***********************************************************************/
+        bool endOfData() {
+            /* Return true if there is no data anyway                         */
+            bool result = true;
+
+            if (!ihContent.empty()) {
+                std::map<std::uint32_t, std::uint8_t>::iterator it \
+ = ihContent.end();
+
+                --it;
+
+                if (it != ihIterator) {
+                    result = false;
+                }
+            }
+            return result;
+        }
+
+        bool empty() {
+            return ihContent.empty();
+        }
+
+        /**********************************************************************/
+        /*! \brief Moves the address pointer to the desired address.
     *
     * Address pointer will take on the requested address if the address
     * exists in the data stored in memory. If not, the address pointer does
@@ -649,22 +613,22 @@ public:
     * \retval true      - Address exists; pointer moved successfully
     * \retval false     - Address did not exist; pointer not moved
     ***********************************************************************/
-    bool jumpTo(std::uint32_t address) {
-        bool result = false;
+        bool jumpTo(std::uint32_t address) {
+            bool result = false;
 
-        if (ihContent.size() != 0) {
-            std::map<std::uint32_t, std::uint8_t>::iterator it;
-            it = ihContent.find(address);
-            if (it != ihContent.end()) {
-                result = true;
-                ihIterator = it;
+            if (ihContent.size() != 0) {
+                std::map<std::uint32_t, std::uint8_t>::iterator it;
+                it = ihContent.find(address);
+                if (it != ihContent.end()) {
+                    result = true;
+                    ihIterator = it;
+                }
             }
+            return result;
         }
-        return result;
-    }
 
-    /**********************************************************************/
-    /*! \brief Increments to next piece of data.
+        /**********************************************************************/
+        /*! \brief Increments to next piece of data.
     *
     * Address pointer will take on the address of the next location for
     * which there is data.
@@ -674,30 +638,30 @@ public:
     * \retval true  - pointer was incremented; a new data value was found
     * \retval false - end of available data reached; pointer is unchanged
     ***********************************************************************/
-    bool incrementAddress() {
-        bool result = false;
+        bool incrementAddress() {
+            bool result = false;
 
-        /* If we have data */
-        if (ihContent.size() != 0) {
-            /* If we're not already pointing to the end */
-            if (ihIterator != ihContent.end()) {
-                /* Increment iterator */
-                ihIterator++;
-
-                /* If we still haven't reached the end... */
+            /* If we have data */
+            if (ihContent.size() != 0) {
+                /* If we're not already pointing to the end */
                 if (ihIterator != ihContent.end()) {
-                    /* Everything is ok! */
-                    result = true;
+                    /* Increment iterator */
+                    ihIterator++;
+
+                    /* If we still haven't reached the end... */
+                    if (ihIterator != ihContent.end()) {
+                        /* Everything is ok! */
+                        result = true;
+                    }
                 }
             }
+
+            /* If incrementation of the iterator was successful, return true  */
+            return result;
         }
 
-        /* If incrementation of the iterator was successful, return true  */
-        return result;
-    }
-
-    /**********************************************************************/
-    /*! \brief Decrements to next piece of data.
+        /**********************************************************************/
+        /*! \brief Decrements to next piece of data.
     *
     * Address pointer will take on the address of the previous location for
     * which there is data.
@@ -707,27 +671,27 @@ public:
     * \retval true  - pointer was decremented; a new data value was found
     * \retval false - start of available data reached; pointer is unchanged
     ***********************************************************************/
-    bool decrementAddress() {
-        bool result = false;
+        bool decrementAddress() {
+            bool result = false;
 
-        /* If we have data */
-        if (ihContent.size() != 0) {
-            /* If we're not already pointing to the start */
-            if (ihIterator != ihContent.begin()) {
-                /* Decrement iterator */
-                ihIterator--;
+            /* If we have data */
+            if (ihContent.size() != 0) {
+                /* If we're not already pointing to the start */
+                if (ihIterator != ihContent.begin()) {
+                    /* Decrement iterator */
+                    ihIterator--;
 
-                /* Everything is ok! */
-                result = true;
+                    /* Everything is ok! */
+                    result = true;
+                }
             }
+
+            /* If incrementation of the iterator was successful, return true  */
+            return result;
         }
 
-        /* If incrementation of the iterator was successful, return true  */
-        return result;
-    }
-
-    /**********************************************************************/
-    /*! \brief Returns the current address being pointed to.
+        /**********************************************************************/
+        /*! \brief Returns the current address being pointed to.
     *
     * Current address will be returned.
     *
@@ -735,12 +699,12 @@ public:
     *
     * \retval   Current address being pointed to.
     ***********************************************************************/
-    std::uint32_t currentAddress() {
-        return ihIterator->first;
-    }
+        std::uint32_t currentAddress() {
+            return ihIterator->first;
+        }
 
-    /**********************************************************************/
-    /*! \brief Returns the lowest address currently available.
+        /**********************************************************************/
+        /*! \brief Returns the lowest address currently available.
     *
     * Returns the first address that appears in the memory if there is data
     * present. If not, no value will be returned.
@@ -753,20 +717,20 @@ public:
     * \retval false     - address did not exist and returned valid is not
     *                     valid
     ***********************************************************************/
-    bool startAddress(std::uint32_t *address) {
-        if (ihContent.size() != 0) {
-            std::map<std::uint32_t, std::uint8_t>::iterator it;
+        bool startAddress(std::uint32_t *address) {
+            if (ihContent.size() != 0) {
+                std::map<std::uint32_t, std::uint8_t>::iterator it;
 
-            it = ihContent.begin();
-            *address = (*it).first;
-            return true;
+                it = ihContent.begin();
+                *address = (*it).first;
+                return true;
+            }
+
+            return false;
         }
 
-        return false;
-    }
-
-    /**********************************************************************/
-    /*! \brief Returns the highest address currently available.
+        /**********************************************************************/
+        /*! \brief Returns the highest address currently available.
     *
     * Returns the last address that appears in the memory if there is data
     * present. If not, no value will be returned.
@@ -779,20 +743,20 @@ public:
     *
     * \sa startAddress()
     ***********************************************************************/
-    bool endAddress(std::uint32_t *address) {
-        if (ihContent.size() != 0) {
-            std::map<std::uint32_t, std::uint8_t>::reverse_iterator rit;
+        bool endAddress(std::uint32_t *address) {
+            if (ihContent.size() != 0) {
+                std::map<std::uint32_t, std::uint8_t>::reverse_iterator rit;
 
-            rit = ihContent.rbegin();
-            *address = (*rit).first;
-            return true;
+                rit = ihContent.rbegin();
+                *address = (*rit).first;
+                return true;
+            }
+
+            return false;
         }
 
-        return false;
-    }
-
-    /**********************************************************************/
-    /*! \brief Returns the data to which the iterator is currently pointing.
+        /**********************************************************************/
+        /*! \brief Returns the data to which the iterator is currently pointing.
     *
     * Returns the data to which the internal iterator (pointer) is currently
     * pointing. If no data is in memory, this function returns false.
@@ -805,16 +769,16 @@ public:
     *
     * \sa putData()
     ***********************************************************************/
-    bool getData(std::uint8_t *data) {
-        if (!ihContent.empty() && (ihIterator != ihContent.end())) {
-            *data = ihIterator->second;
-            return true;
+        bool getData(std::uint8_t *data) {
+            if (!ihContent.empty() && (ihIterator != ihContent.end())) {
+                *data = ihIterator->second;
+                return true;
+            }
+            return false;
         }
-        return false;
-    }
 
-    /**********************************************************************/
-    /*! \brief Returns the data for desired address.
+        /**********************************************************************/
+        /*! \brief Returns the data for desired address.
     *
     * Returns the data for the desired address. If the address has no data
     * assigned to it, the function returns false, the pointer to data is not
@@ -832,48 +796,48 @@ public:
     *
     * \sa putData()
     ***********************************************************************/
-    bool getData(std::uint8_t *data, std::uint32_t address) {
-        bool found = false;
-        std::map<std::uint32_t, std::uint8_t>::iterator localIterator;
+        bool getData(std::uint8_t *data, std::uint32_t address) {
+            bool found = false;
+            std::map<std::uint32_t, std::uint8_t>::iterator localIterator;
 
-        if (!ihContent.empty()) {
-            localIterator = ihContent.find(address);
+            if (!ihContent.empty()) {
+                localIterator = ihContent.find(address);
 
-            if (localIterator != ihContent.end()) {
-                found = true;
-                ihIterator = localIterator;
-                *data = ihIterator->second;
+                if (localIterator != ihContent.end()) {
+                    found = true;
+                    ihIterator = localIterator;
+                    *data = ihIterator->second;
+                }
             }
+
+            return found;
         }
 
-        return found;
-    }
 
-
-    /**********************************************************************/
-    /*! \brief Returns number of unread warning messages.
+        /**********************************************************************/
+        /*! \brief Returns number of unread warning messages.
     *
     * Number of unread warning messages will be returned.
     *
     * \sa popNextWarning(), getNoErrors(), popNextError()
     ***********************************************************************/
-    std::uint32_t getNoWarnings() {
-        return msgWarning.noOfWarnings;
-    }
+        std::size_t getNoWarnings() {
+            return msgWarning.noOfWarnings;
+        }
 
-    /**********************************************************************/
-    /*! \brief Returns number of unread error messages.
+        /**********************************************************************/
+        /*! \brief Returns number of unread error messages.
     *
     * Number of unread error messages will be returned.
     *
     * \sa popNextWarning(), getNoWarnings(), popNextError()
     ***********************************************************************/
-    std::uint32_t getNoErrors() {
-        return msgError.noOfErrors;
-    }
+        std::size_t getNoErrors() {
+            return msgError.noOfErrors;
+        }
 
-    /**********************************************************************/
-    /*! \brief Pop next warning message from the list of warnings.
+        /**********************************************************************/
+        /*! \brief Pop next warning message from the list of warnings.
     *
     * Next warning message is returned from the list of warnings. If there
     * are no more warning in the list, the string will be unchanged.
@@ -885,23 +849,23 @@ public:
     *
     * \sa getNoWarnings(), getNoErrors(), popNextError()
     ***********************************************************************/
-    bool popNextWarning(std::string &warning) {
-        if (msgWarning.noOfWarnings > 0) {
-            warning = msgWarning.ihWarnings.front();
+        bool popNextWarning(std::string &warning) {
+            if (msgWarning.noOfWarnings > 0) {
+                warning = msgWarning.ihWarnings.front();
 
-            msgWarning.ihWarnings.pop_front();
+                msgWarning.ihWarnings.pop_front();
 
-            msgWarning.noOfWarnings = msgWarning.ihWarnings.size();
+                msgWarning.noOfWarnings = msgWarning.ihWarnings.size();
 
-            return true;
+                return true;
+            }
+            else {
+                return false;
+            }
         }
-        else {
-            return false;
-        }
-    }
 
-    /**********************************************************************/
-    /*! \brief Pop next error message from the list of errors.
+        /**********************************************************************/
+        /*! \brief Pop next error message from the list of errors.
     *
     * Next error message is returned from the list of errors. If there are
     * no more errors in the list, no string will be returned unchanged.
@@ -913,23 +877,23 @@ public:
     *
     * \sa getNoWarnings(), getNoErrors(), popNextError()
     ***********************************************************************/
-    bool popNextError(std::string &error) {
-        if (msgError.noOfErrors > 0) {
-            error = msgError.ihErrors.front();
+        bool popNextError(std::string &error) {
+            if (msgError.noOfErrors > 0) {
+                error = msgError.ihErrors.front();
 
-            msgError.ihErrors.pop_front();
+                msgError.ihErrors.pop_front();
 
-            msgError.noOfErrors = msgError.ihErrors.size();
+                msgError.noOfErrors = msgError.ihErrors.size();
 
-            return true;
+                return true;
+            }
+            else {
+                return false;
+            }
         }
-        else {
-            return false;
-        }
-    }
 
-    /**********************************************************************/
-    /*! \brief Returns segment start address for the IP and ES registers.
+        /**********************************************************************/
+        /*! \brief Returns segment start address for the IP and ES registers.
     *
     * If these values exist, they will be returned. If not, the function
     * returns false.
@@ -943,18 +907,18 @@ public:
     * \sa getStartLinearAddress(), setStartSegmentAddress(),
     *     setStartLinearAddress()
     ***********************************************************************/
-    bool getStartSegmentAddress(std::uint16_t *ipRegister,
-                                std::uint16_t *csRegister) {
-        if (startSegmentAddress.exists) {
-            *ipRegister = startSegmentAddress.ipRegister;
-            *csRegister = startSegmentAddress.csRegister;
+        bool getStartSegmentAddress(std::uint16_t *ipRegister,
+                                    std::uint16_t *csRegister) {
+            if (startSegmentAddress.exists) {
+                *ipRegister = startSegmentAddress.ipRegister;
+                *csRegister = startSegmentAddress.csRegister;
+            }
+
+            return startSegmentAddress.exists;
         }
 
-        return startSegmentAddress.exists;
-    }
-
-    /**********************************************************************/
-    /*! \brief Returns segment linear address for the EIP register.
+        /**********************************************************************/
+        /*! \brief Returns segment linear address for the EIP register.
     *
     * If this value exists, they will be returned. If not, the function
     * returns false.
@@ -967,16 +931,16 @@ public:
     * \sa getStartSegmentAddress(), setStartSegmentAddress(),
     *     setStartLinearAddress()
     ***********************************************************************/
-    bool getStartLinearAddress(std::uint32_t *eipRegister) {
-        if (startLinearAddress.exists) {
-            *eipRegister = startLinearAddress.eipRegister;
+        bool getStartLinearAddress(std::uint32_t *eipRegister) {
+            if (startLinearAddress.exists) {
+                *eipRegister = startLinearAddress.eipRegister;
+            }
+
+            return startLinearAddress.exists;
         }
 
-        return startLinearAddress.exists;
-    }
-
-    /**********************************************************************/
-    /*! \brief Sets the segment start address for the IP and CS registers.
+        /**********************************************************************/
+        /*! \brief Sets the segment start address for the IP and CS registers.
     *
     * Allows user to define or redefine the contents of the IP and CS
     * registers
@@ -987,15 +951,15 @@ public:
     * \sa getStartLinearAddress(), getStartSegmentAddress(),
     *     setStartLinearAddress()
     ***********************************************************************/
-    void setStartSegmentAddress(std::uint16_t ipRegister,
-                                std::uint16_t csRegister) {
-        startSegmentAddress.ipRegister = ipRegister;
-        startSegmentAddress.csRegister = csRegister;
-        startSegmentAddress.exists = true;
-    }
+        void setStartSegmentAddress(std::uint16_t ipRegister,
+                                    std::uint16_t csRegister) {
+            startSegmentAddress.ipRegister = ipRegister;
+            startSegmentAddress.csRegister = csRegister;
+            startSegmentAddress.exists = true;
+        }
 
-    /**********************************************************************/
-    /*! \brief Sets the segment start address for the EIP register.
+        /**********************************************************************/
+        /*! \brief Sets the segment start address for the EIP register.
     *
     * Allows user to define or redefine the contents of the EIP register
     *
@@ -1004,48 +968,49 @@ public:
     * \sa getStartSegmentAddress(), setStartSegmentAddress(),
     *     getStartLinearAddress()
     ***********************************************************************/
-    void setStartLinearAddress(std::uint32_t eipRegister) {
-        startLinearAddress.eipRegister = eipRegister;
-        startLinearAddress.exists = true;
-    }
+        void setStartLinearAddress(std::uint32_t eipRegister) {
+            startLinearAddress.eipRegister = eipRegister;
+            startLinearAddress.exists = true;
+        }
 
-    /**********************************************************************/
-    /*! \brief Turns on segment addressing mode during encoding.
+        /**********************************************************************/
+        /*! \brief Turns on segment addressing mode during encoding.
     *
     * Uses the Segment Address Record during encoding.
     ***********************************************************************/
-    void segmentAddressingOn() {
-        segmentAddressMode = true;
-    }
+        void segmentAddressingOn() {
+            segmentAddressMode = true;
+        }
 
-    /**********************************************************************/
-    /*! \brief Turns on linear addressing mode during encoding.
+        /**********************************************************************/
+        /*! \brief Turns on linear addressing mode during encoding.
     *
     * Uses the Linear Address Record during encoding.
     ***********************************************************************/
-    void linearAddressingOn() {
-        segmentAddressMode = false;
-    }
+        void linearAddressingOn() {
+            segmentAddressMode = false;
+        }
 
-    /**********************************************************************/
-    /*! \brief Turns on textual output to cout during decoding.
+        /**********************************************************************/
+        /*! \brief Turns on textual output to cout during decoding.
     *
     * Per record single line output to cout during decoding of Intel HEX
     * files.
     ***********************************************************************/
-    void verboseOn() {
-        verbose = true;
-    }
+        void verboseOn() {
+            verbose = true;
+        }
 
-    /**********************************************************************/
-    /*! \brief Turns off textual output to cout during decoding.
+        /**********************************************************************/
+        /*! \brief Turns off textual output to cout during decoding.
     *
     * No output to cout during decoding of Intel HEX files.
     ***********************************************************************/
-    void verboseOff() {
-        verbose = false;
-    }
-};
+        void verboseOff() {
+            verbose = false;
+        }
+    };
+}
 
 #endif
 

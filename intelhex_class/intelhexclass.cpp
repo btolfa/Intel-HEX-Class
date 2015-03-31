@@ -69,6 +69,7 @@
 
 using namespace std;
 
+namespace intelhex {
 /******************************************************************************/
 /*! Possible record types for Intel HEX file.
 *
@@ -972,6 +973,7 @@ ostream &operator<<(ostream &dataOut, intelhex &ihLocal) {
     return (dataOut);
 }
 
+}
 /*******************************************************************************
 *
 *                        INTEL HEX FILE CLASS MODULE END
