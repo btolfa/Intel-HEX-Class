@@ -62,19 +62,10 @@
 * No notes to date (19th Jan 2012)
 *******************************************************************************/
 
-#include <iostream>
-#include <string>
-#include <vector>
-
-#ifdef _MSC_FULL_VER
-#include <stdio.h>
-#else
-
-#include <cstdio>
-
-#endif
-
 #include "intelhexclass.h"
+
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -169,25 +160,6 @@ string intelhex::ulToHexString(std::uint32_t value) {
 }
 
 /*******************************************************************************
-* Converts an std::uint32_t to a string in DEC format
-*******************************************************************************/
-string intelhex::ulToString(std::uint32_t value) {
-    string returnString;
-    char localString[50];
-
-    returnString.erase();
-
-#ifdef _MSC_FULL_VER
-    sprintf_s(localString, 49, "%lu", value);
-#else
-    snprintf(localString, 49, "%u", value);
-#endif
-    returnString.insert(0, localString);
-
-    return returnString;
-}
-
-/*******************************************************************************
 * Converts an std::uint8_t to a string in HEX format
 *******************************************************************************/
 string intelhex::ucToHexString(std::uint8_t value) {
@@ -214,7 +186,7 @@ void intelhex::addWarning(string warningMessage) {
     string localMessage;
 
     /* Build the message and push the warning message onto the list           */
-    localMessage += ulToString(msgWarning.noOfWarnings + 1) + " Warning: "
+    localMessage += std::to_string(msgWarning.noOfWarnings + 1) + " Warning: "
                     + warningMessage;
 
     msgWarning.ihWarnings.push_back(localMessage);
@@ -230,7 +202,7 @@ void intelhex::addError(string errorMessage) {
     string localMessage;
 
     /* Build the message and push the error message onto the list             */
-    localMessage += ulToString(msgError.noOfErrors + 1) + " Error: "
+    localMessage += std::to_string(msgError.noOfErrors + 1) + " Error: "
                     + errorMessage;
 
     msgError.ihErrors.push_back(localMessage);
@@ -269,7 +241,7 @@ void intelhex::decodeDataRecord(std::uint8_t recordLength,
         ihReturn = ihContent.insert(
                 pair<int, std::uint8_t>(segmentBaseAddress, byteRead));
 
-        if (ihReturn.second == false) {
+        if (! ihReturn.second) {
             /* If this address already contains the byte we are trying to     */
             /* write, this is only a warning                                  */
             if (ihReturn.first->second == byteRead) {
@@ -344,8 +316,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 /* Add some warning code here                                 */
                 string message;
 
-                message = "Line without record mark ':' found @ line " +
-                          ihLocal.ulToString(lineCounter);
+                message = "Line without record mark ':' found @ line " + std::to_string(lineCounter);
 
                 ihLocal.addWarning(message);
 
@@ -394,7 +365,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     string message;
 
                     message = "Odd number of characters in line " +
-                              ihLocal.ulToString(lineCounter);
+                              std::to_string(lineCounter);
 
                     ihLocal.addError(message);
                 }
@@ -450,7 +421,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     case DATA_RECORD:
                         ihLocal.decodeDataRecord(recordLength, loadOffset,
                                                  ihLineIterator);
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "Data Record begining @ 0x" <<
                             ihLocal.ulToHexString(loadOffset) << endl;
                         }
@@ -459,20 +430,20 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     case END_OF_FILE_RECORD:
                         /* Check that the EOF record wasn't already found. If */
                         /* it was, generate appropriate error                 */
-                        if (ihLocal.foundEof == false) {
+                        if (! ihLocal.foundEof) {
                             ihLocal.foundEof = true;
                         }
                         else {
                             string message;
 
                             message = "Additional End Of File record @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " found.";
 
                             ihLocal.addError(message);
                         }
                         /* Generate error if there were                       */
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "End of File" << endl;
                         }
                         break;
@@ -511,12 +482,12 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             string message;
 
                             message = "Extended Segment Address @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " not 2 bytes as required.";
 
                             ihLocal.addError(message);
                         }
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "Ext. Seg. Address found: 0x" <<
                             ihLocal.ulToHexString(ihLocal.segmentBaseAddress)
                             << endl;
@@ -528,7 +499,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         /* Make sure we have 4 bytes of data, and that no     */
                         /* Start Segment Address has been found to date       */
                         if (recordLength == 4 &&
-                            ihLocal.startSegmentAddress.exists == false) {
+                                (! ihLocal.startSegmentAddress.exists)) {
                             /* Note that the Start Segment Address has been   */
                             /* found.                                         */
                             ihLocal.startSegmentAddress.exists = true;
@@ -574,22 +545,22 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         }
                             /* Note an error if the start seg. address already    */
                             /* exists                                             */
-                        else if (ihLocal.startSegmentAddress.exists == true) {
+                        else if (ihLocal.startSegmentAddress.exists) {
                             string message;
 
                             message = "Start Segment Address record appears again @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       "; repeated record ignored.";
 
                             ihLocal.addError(message);
                         }
                         /* Note an error if the start lin. address already    */
                         /* exists as they should be mutually exclusive        */
-                        if (ihLocal.startLinearAddress.exists == true) {
+                        if (ihLocal.startLinearAddress.exists) {
                             string message;
 
                             message = "Start Segment Address record found @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " but Start Linear Address already exists.";
 
                             ihLocal.addError(message);
@@ -600,12 +571,12 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             string message;
 
                             message = "Start Segment Address @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " not 4 bytes as required.";
 
                             ihLocal.addError(message);
                         }
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "Start Seg. Address - CS 0x" <<
                             ihLocal.ulToHexString(ihLocal.startSegmentAddress.csRegister) <<
                             " IP 0x" <<
@@ -650,12 +621,12 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             string message;
 
                             message = "Extended Linear Address @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " not 2 bytes as required.";
 
                             ihLocal.addError(message);
                         }
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "Ext. Lin. Address 0x" <<
                             ihLocal.ulToHexString(ihLocal.segmentBaseAddress)
                             << endl;
@@ -666,7 +637,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     case START_LINEAR_ADDRESS:
                         /* Make sure we have 4 bytes of data                  */
                         if (recordLength == 4 &&
-                            ihLocal.startLinearAddress.exists == false) {
+                                (!ihLocal.startLinearAddress.exists)) {
                             /* Extract the four bytes of the SLA              */
                             ihLocal.startLinearAddress.eipRegister = 0;
 
@@ -708,22 +679,22 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         }
                             /* Note an error if the start seg. address already    */
                             /* exists                                             */
-                        else if (ihLocal.startLinearAddress.exists == true) {
+                        else if (ihLocal.startLinearAddress.exists) {
                             string message;
 
                             message = "Start Linear Address record appears again @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       "; repeated record ignored.";
 
                             ihLocal.addError(message);
                         }
                         /* Note an error if the start seg. address already    */
                         /* exists as they should be mutually exclusive        */
-                        if (ihLocal.startSegmentAddress.exists == true) {
+                        if (ihLocal.startSegmentAddress.exists) {
                             string message;
 
                             message = "Start Linear Address record found @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " but Start Segment Address already exists.";
 
                             ihLocal.addError(message);
@@ -734,12 +705,12 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             string message;
 
                             message = "Start Linear Address @ line " +
-                                      ihLocal.ulToString(lineCounter) +
+                                      std::to_string(lineCounter) +
                                       " not 4 bytes as required.";
 
                             ihLocal.addError(message);
                         }
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "Start Lin. Address - EIP 0x" <<
                             ihLocal.ulToHexString(ihLocal.startLinearAddress.eipRegister)
                             << endl;
@@ -748,16 +719,16 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
 
                     default:
                         /* Handle the error here                              */
-                        if (ihLocal.verbose == true) {
+                        if (ihLocal.verbose) {
                             cout << "Unknown Record @ line " <<
-                            ihLocal.ulToString(lineCounter) << endl;
+                            std::to_string(lineCounter) << endl;
                         }
 
 
                         string message;
 
                         message = "Unknown Intel HEX record @ line " +
-                                  ihLocal.ulToString(lineCounter);
+                                  std::to_string(lineCounter);
 
                         ihLocal.addError(message);
 
@@ -769,7 +740,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 string message;
 
                 message = "Checksum error @ line " +
-                          ihLocal.ulToString(lineCounter) +
+                          std::to_string(lineCounter) +
                           "; calculated 0x" +
                           ihLocal.ucToHexString(intelHexChecksum - byteRead) +
                           " expected 0x" +
@@ -780,7 +751,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
         }
     } while (ihLine.length() > 0);
 
-    if (ihLocal.verbose == true) {
+    if (ihLocal.verbose) {
         cout << "Decoded " << lineCounter << " lines from file." << endl;
     }
 
@@ -810,7 +781,7 @@ ostream &operator<<(ostream &dataOut, intelhex &ihLocal) {
         checksum = 0;
 
         /* Construct the first record to define the segment base address      */
-        if (ihLocal.segmentAddressMode == false) {
+        if (! ihLocal.segmentAddressMode) {
             std::uint8_t dataByte;
 
             addressOffset >>= 16;
@@ -863,7 +834,7 @@ ostream &operator<<(ostream &dataOut, intelhex &ihLocal) {
             loadOffset = (*ihIterator).first;
 
             /* If we are using the linear mode...                             */
-            if (ihLocal.segmentAddressMode == false) {
+            if (! ihLocal.segmentAddressMode) {
                 if ((loadOffset >> 16) != addressOffset) {
                     std::uint8_t dataByte;
 
@@ -995,7 +966,7 @@ ostream &operator<<(ostream &dataOut, intelhex &ihLocal) {
     }
 
     /* If there is a segment start address, output the data                   */
-    if (ihLocal.startSegmentAddress.exists == true) {
+    if (ihLocal.startSegmentAddress.exists) {
         std::uint8_t dataByte;
 
         thisRecord.clear();
@@ -1029,7 +1000,7 @@ ostream &operator<<(ostream &dataOut, intelhex &ihLocal) {
     }
 
     /* If there is a linear start address, output the data                    */
-    if (ihLocal.startLinearAddress.exists == true) {
+    if (ihLocal.startLinearAddress.exists) {
         std::uint8_t dataByte;
 
         thisRecord.clear();

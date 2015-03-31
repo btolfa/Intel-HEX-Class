@@ -214,7 +214,7 @@ private:
     ***********************************************************************/
     struct {
         std::list<std::string> ihWarnings;
-        std::uint32_t noOfWarnings;
+        std::size_t noOfWarnings;
     } msgWarning;
 
     /**********************************************************************/
@@ -229,7 +229,7 @@ private:
     ***********************************************************************/
     struct {
         std::list<std::string> ihErrors;
-        std::uint32_t noOfErrors;
+        std::size_t noOfErrors;
     } msgError;
 
     /**********************************************************************/
@@ -946,7 +946,7 @@ public:
     ***********************************************************************/
     bool getStartSegmentAddress(std::uint16_t *ipRegister,
                                 std::uint16_t *csRegister) {
-        if (startSegmentAddress.exists == true) {
+        if (startSegmentAddress.exists) {
             *ipRegister = startSegmentAddress.ipRegister;
             *csRegister = startSegmentAddress.csRegister;
         }
@@ -969,7 +969,7 @@ public:
     *     setStartLinearAddress()
     ***********************************************************************/
     bool getStartLinearAddress(std::uint32_t *eipRegister) {
-        if (startLinearAddress.exists == true) {
+        if (startLinearAddress.exists) {
             *eipRegister = startLinearAddress.eipRegister;
         }
 
