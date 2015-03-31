@@ -85,61 +85,6 @@ enum intelhexRecordType {
 };
 
 /*******************************************************************************
-* Converts a 2 char string to its HEX value
-*******************************************************************************/
-std::uint8_t intelhex::stringToHex(string value) {
-    std::uint8_t returnValue = 0;
-    string::iterator valueIterator;
-
-    if (value.length() == 2) {
-        valueIterator = value.begin();
-
-        for (int x = 0; x < 2; x++) {
-            /* Shift result variable 4 bits to the left                       */
-            returnValue <<= 4;
-
-            if (*valueIterator >= '0' && *valueIterator <= '9') {
-                returnValue +=
-                        static_cast<std::uint8_t>(*valueIterator - '0');
-            }
-            else if (*valueIterator >= 'A' && *valueIterator <= 'F') {
-                returnValue +=
-                        static_cast<std::uint8_t>(*valueIterator - 'A' + 10);
-            }
-            else if (*valueIterator >= 'a' && *valueIterator <= 'f') {
-                returnValue +=
-                        static_cast<std::uint8_t>(*valueIterator - 'a' + 10);
-            }
-            else {
-                /* Error occured - non-HEX value found                        */
-                string message;
-
-                message = "Can't convert byte 0x" + value + " @ 0x" +
-                          ulToHexString(segmentBaseAddress) + " to hex.";
-
-                addError(message);
-
-                returnValue = 0;
-            }
-
-            /* Iterate to next char in the string                             */
-            ++valueIterator;
-        }
-    }
-    else {
-        /* Error occured - more or less than two nibbles in the string        */
-        string message;
-
-        message = value + " @ 0x" + ulToHexString(segmentBaseAddress) +
-                  " isn't an 8-bit value.";
-
-        addError(message);
-    }
-
-    return returnValue;
-}
-
-/*******************************************************************************
 * Converts an std::uint32_t to a string in HEX format
 *******************************************************************************/
 string intelhex::ulToHexString(std::uint32_t value) {
@@ -236,7 +181,7 @@ void intelhex::decodeDataRecord(std::uint8_t recordLength,
         sByteRead += *data;
         data++;
 
-        byteRead = stringToHex(sByteRead);
+        byteRead = std::stoul(sByteRead, 0, 16);
 
         ihReturn = ihContent.insert(
                 pair<int, std::uint8_t>(segmentBaseAddress, byteRead));
@@ -357,7 +302,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     ihByte += *ihLineIterator;
                     ++ihLineIterator;
 
-                    byteRead = ihLocal.stringToHex(ihByte);
+                    byteRead = std::stoul(ihByte, 0, 16);
 
                     intelHexChecksum += byteRead;
                 }
@@ -388,7 +333,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 ++ihLineIterator;
                 ihByte += *ihLineIterator;
                 ++ihLineIterator;
-                recordLength = ihLocal.stringToHex(ihByte);
+                recordLength = std::stoul(ihByte, 0, 16);
 
                 /* Get the load offset (2 bytes)                              */
                 ihByte.erase();
@@ -397,7 +342,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 ihByte += *ihLineIterator;
                 ++ihLineIterator;
                 loadOffset =
-                        static_cast<std::uint32_t>(ihLocal.stringToHex(ihByte));
+                        std::stoul(ihByte, 0, 16);
                 loadOffset <<= 8;
                 ihByte.erase();
                 ihByte = *ihLineIterator;
@@ -405,7 +350,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 ihByte += *ihLineIterator;
                 ++ihLineIterator;
                 loadOffset +=
-                        static_cast<std::uint32_t>(ihLocal.stringToHex(ihByte));
+                        std::stoul(ihByte, 0, 16);
 
                 /* Get the record type                                        */
                 ihByte.erase();
@@ -414,7 +359,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 ihByte += *ihLineIterator;
                 ++ihLineIterator;
                 recordType =
-                        static_cast<intelhexRecordType>(ihLocal.stringToHex(ihByte));
+                        static_cast<intelhexRecordType>(std::stoul(ihByte, 0, 16));
 
                 /* Decode the INFO or DATA portion of the record              */
                 switch (recordType) {
@@ -459,16 +404,14 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extSegAddress = static_cast<std::uint32_t>
-                            (ihLocal.stringToHex(ihByte));
+                            extSegAddress = std::stoul(ihByte, 0, 16);
                             extSegAddress <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extSegAddress += static_cast<std::uint32_t>
-                            (ihLocal.stringToHex(ihByte));
+                            extSegAddress += std::stoul(ihByte, 0, 16);
 
                             /* ESA is bits 4-19 of the segment base address   */
                             /* (SBA), so shift left 4 bits                    */
@@ -513,8 +456,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.csRegister =
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                             ihLocal.startSegmentAddress.csRegister <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
@@ -522,8 +464,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.csRegister +=
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
 
                             ihByte.erase();
                             ihByte = *ihLineIterator;
@@ -531,8 +472,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.ipRegister =
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                             ihLocal.startSegmentAddress.ipRegister <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
@@ -540,8 +480,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.ipRegister +=
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                         }
                             /* Note an error if the start seg. address already    */
                             /* exists                                             */
@@ -596,16 +535,14 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extLinAddress = static_cast<std::uint32_t>
-                            (ihLocal.stringToHex(ihByte));
+                            extLinAddress = std::stoul(ihByte, 0, 16);
                             extLinAddress <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extLinAddress += static_cast<std::uint32_t>
-                            (ihLocal.stringToHex(ihByte));
+                            extLinAddress += std::stoul(ihByte, 0, 16);
 
                             /* ELA is bits 16-31 of the segment base address  */
                             /* (SBA), so shift left 16 bits                   */
@@ -647,8 +584,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister =
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                             ihLocal.startLinearAddress.eipRegister <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
@@ -656,8 +592,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister +=
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                             ihLocal.startLinearAddress.eipRegister <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
@@ -665,8 +600,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister +=
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                             ihLocal.startLinearAddress.eipRegister <<= 8;
                             ihByte.erase();
                             ihByte = *ihLineIterator;
@@ -674,8 +608,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister +=
-                                    static_cast<std::uint32_t>
-                                    (ihLocal.stringToHex(ihByte));
+                                    std::stoul(ihByte, 0, 16);
                         }
                             /* Note an error if the start seg. address already    */
                             /* exists                                             */
