@@ -40,6 +40,7 @@
 *
 *******************************************************************************/
 
+#pragma once
 #ifndef INTELHEXCLASS_MODULE_PRESENT__
 #define INTELHEXCLASS_MODULE_PRESENT__
 
@@ -49,6 +50,7 @@
 #include <iostream>
 #include <map>
 #include <list>
+#include <cstdint>
 
 /*******************************************************************************
 *                                    EXTERNS
@@ -63,8 +65,6 @@
 /*******************************************************************************
 *                                    DEFINES
 *******************************************************************************/
-
-using namespace std;
 
 /******************************************************************************/
 /*! \cond
@@ -95,7 +95,7 @@ class intelhex {
         *
         * \retval           - pointer to output stream
         ***********************************************************************/
-        friend ostream& operator<<(ostream& dataOut, 
+        friend std::ostream& operator<<(std::ostream& dataOut,
                                    intelhex& ihLocal);
         
         /**********************************************************************/
@@ -112,7 +112,7 @@ class intelhex {
         *
         * \retval           - pointer to input stream
         ***********************************************************************/
-        friend istream& operator>>(istream& dataIn, 
+        friend std::istream& operator>>(std::istream& dataIn,
                                    intelhex& ihLocal);
 
     private:
@@ -122,7 +122,7 @@ class intelhex {
         * STL map holding the addresses found in the Intel HEX file and the
         * associated data byte stored at that address                 
         ***********************************************************************/
-        map<unsigned long, unsigned char> ihContent;
+        std::map<std::uint32_t, std::uint8_t> ihContent;
         
         /**********************************************************************/
         /*! \brief Iterator for the container holding the decoded Intel HEX
@@ -132,7 +132,7 @@ class intelhex {
         * currently being used to read or write data. If no file has been 
         * loaded into memory, it points to the start of ihContent. 
         ***********************************************************************/
-        map<unsigned long, unsigned char>::iterator ihIterator;
+        std::map<std::uint32_t, std::uint8_t>::iterator ihIterator;
         
         /**********************************************************************/
         /*! \brief Pair for the container holding the decoded Intel HEX content.
@@ -143,7 +143,7 @@ class intelhex {
         * can ensure that no address in a file is falsely assigned data more 
         * than once.
         ***********************************************************************/
-        pair<map<unsigned long, unsigned char>::iterator,bool> ihReturn;
+        std::pair<std::map<std::uint32_t, std::uint8_t>::iterator,bool> ihReturn;
   
         /**********************************************************************/
         /*! \brief Stores segment base address of Intel HEX file.
@@ -157,7 +157,7 @@ class intelhex {
         * and encoding in the operator<< and operator>> class member friend
         * functions.
         ***********************************************************************/
-        unsigned long segmentBaseAddress;
+        std::uint32_t segmentBaseAddress;
         
         /**********************************************************************/
         /*! \brief Stores the content of the CS/IP Registers, if used.
@@ -197,7 +197,7 @@ class intelhex {
         * \sa getStartLinearAddress(), setStartLinearAddress()
         ***********************************************************************/
         struct {
-            unsigned long   eipRegister;
+            std::uint32_t   eipRegister;
             bool            exists;
         } startLinearAddress;
         
@@ -213,8 +213,8 @@ class intelhex {
         *                             the list
         ***********************************************************************/
         struct {
-            list<string> ihWarnings;
-            unsigned long noOfWarnings;
+            std::list<std::string> ihWarnings;
+            std::uint32_t noOfWarnings;
         } msgWarning;
         
         /**********************************************************************/
@@ -228,8 +228,8 @@ class intelhex {
         *                             list
         ***********************************************************************/
         struct {
-            list<string> ihErrors;
-            unsigned long noOfErrors;
+            std::list<std::string> ihErrors;
+            std::uint32_t noOfErrors;
         } msgError;
         
         /**********************************************************************/
@@ -278,10 +278,10 @@ class intelhex {
         *
         * \sa ulToHexString(), ucToHexString(), ulToString()
         ***********************************************************************/
-        unsigned char stringToHex(string value);
+        std::uint8_t stringToHex(std::string value);
 
         /***********************************************************************   
-        * \brief Converts an unsigned long to a string in HEX format.
+        * \brief Converts an std::uint32_t to a string in HEX format.
         *
         * Takes the received paramter and converts it into its equivalent value
         * represented in ASCII and formatted in hexadecimal. Return value is an
@@ -297,10 +297,10 @@ class intelhex {
         * \sa
         * stringToHex(), ucToHexString(), ulToString()
         ***********************************************************************/
-        string ulToHexString(unsigned long value);
+        std::string ulToHexString(std::uint32_t value);
 
         /**********************************************************************/
-        /*! \brief Converts an unsigned char to a string in HEX format.
+        /*! \brief Converts an std::uint8_t to a string in HEX format.
         *
         * Takes the received paramter and converts it into its equivalent value
         * represented in ASCII and formatted in hexadecimal. Return value is a
@@ -316,10 +316,10 @@ class intelhex {
         * \sa
         * stringToHex(), ulToHexString(), ulToString()
         ***********************************************************************/
-        string ucToHexString(unsigned char value);
+        std::string ucToHexString(std::uint8_t value);
         
         /**********************************************************************/
-        /*! \brief Converts an unsigned long to a string in DEC format.
+        /*! \brief Converts an std::uint32_t to a string in DEC format.
         *
         * Takes the received paramter and converts it into its equivalent value
         * represented in ASCII and formatted in decimal. Return value will never
@@ -332,7 +332,7 @@ class intelhex {
         * \sa
         * stringToHex(), ulToHexString(), ucToHexString()
         ***********************************************************************/
-        string ulToString(unsigned long value);
+        std::string ulToString(std::uint32_t value);
         
         /**********************************************************************/
         /*! \brief Decodes the data content of a data record.
@@ -349,9 +349,9 @@ class intelhex {
         *                         the first byte in this record
         * \param data           - The data content of the record in a string
         ***********************************************************************/
-        void decodeDataRecord(unsigned char recordLength,
-                              unsigned long loadOffset, 
-                              string::const_iterator data);
+        void decodeDataRecord(std::uint8_t recordLength,
+                              std::uint32_t loadOffset,
+                              std::string::const_iterator data);
                               
         /**********************************************************************/
         /*! \brief Add a warning message to the warning message list.
@@ -359,14 +359,14 @@ class intelhex {
         *
         * \param    warningMessage - the text to be added for this warning
         ***********************************************************************/
-        void addWarning(string warningMessage);
+        void addWarning(std::string warningMessage);
         
         /**********************************************************************/
         /*! \brief Add an error message to the error message list.
         *
         * \param    errorMessage - the text to be added for this error        
         ***********************************************************************/
-        void addError(string errorMessage);
+        void addError(std::string errorMessage);
         
     public:
         /**********************************************************************/
@@ -609,9 +609,9 @@ class intelhex {
         * \note This function has no effect if no file has been as yet decoded
         * and no data has been inserted into memory.
         ***********************************************************************/
-        unsigned long size()
+        std::uint32_t size()
 		{
-			return static_cast<unsigned long>(ihContent.size());
+			return static_cast<std::uint32_t>(ihContent.size());
 		}
 		
         /**********************************************************************/
@@ -637,7 +637,7 @@ class intelhex {
             
             if (!ihContent.empty())
             {
-				map<unsigned long, unsigned char>::iterator it \
+                std::map<std::uint32_t, std::uint8_t>::iterator it \
 					                                         = ihContent.end();
 				
 				--it;
@@ -669,13 +669,13 @@ class intelhex {
         * \retval true      - Address exists; pointer moved successfully
         * \retval false     - Address did not exist; pointer not moved
         ***********************************************************************/
-        bool jumpTo(unsigned long address)
+        bool jumpTo(std::uint32_t address)
         {
             bool result = false;
             
             if (ihContent.size() != 0)
             {
-                map<unsigned long, unsigned char>::iterator it;
+                std::map<std::uint32_t, std::uint8_t>::iterator it;
                 it = ihContent.find(address);
                 if (it != ihContent.end())
                 {
@@ -765,7 +765,7 @@ class intelhex {
         *
         * \retval   Current address being pointed to.
         ***********************************************************************/
-        unsigned long currentAddress()
+        std::uint32_t currentAddress()
         {
             return ihIterator->first;
         }
@@ -784,11 +784,11 @@ class intelhex {
         * \retval false     - address did not exist and returned valid is not
         *                     valid
         ***********************************************************************/
-        bool startAddress(unsigned long * address)
+        bool startAddress(std::uint32_t * address)
         {
             if (ihContent.size() != 0)
             {
-                map<unsigned long, unsigned char>::iterator it;
+                std::map<std::uint32_t, std::uint8_t>::iterator it;
             
                 it = ihContent.begin();
                 *address = (*it).first;
@@ -812,11 +812,11 @@ class intelhex {
         *
         * \sa startAddress()
         ***********************************************************************/
-        bool endAddress(unsigned long * address)
+        bool endAddress(std::uint32_t * address)
         {
             if (ihContent.size() != 0)
             {
-                map<unsigned long, unsigned char>::reverse_iterator rit;
+                std::map<std::uint32_t, std::uint8_t>::reverse_iterator rit;
             
                 rit = ihContent.rbegin();
                 *address = (*rit).first;
@@ -840,7 +840,7 @@ class intelhex {
         *
         * \sa putData()
         ***********************************************************************/
-        bool getData(unsigned char * data)
+        bool getData(std::uint8_t * data)
         {
             if (!ihContent.empty() && (ihIterator != ihContent.end()))
             {
@@ -869,10 +869,10 @@ class intelhex {
         *
         * \sa putData()
         ***********************************************************************/
-		bool getData(unsigned char * data, unsigned long address)
+		bool getData(std::uint8_t * data, std::uint32_t address)
 		{
 			bool found = false;
-			map<unsigned long, unsigned char>::iterator localIterator;
+            std::map<std::uint32_t, std::uint8_t>::iterator localIterator;
 
             if (!ihContent.empty())
             {
@@ -898,26 +898,26 @@ class intelhex {
         *
         * \sa startAddress()
         ***********************************************************************/
-        bool insertData(unsigned char data);
-        bool insertData(unsigned char data, unsigned long address);
+        bool insertData(std::uint8_t data);
+        bool insertData(std::uint8_t data, std::uint32_t address);
         
-        void overwriteData(unsigned char data);
-        void overwriteData(unsigned char data, unsigned long address);
+        void overwriteData(std::uint8_t data);
+        void overwriteData(std::uint8_t data, std::uint32_t address);
         
-        bool blankFill(unsigned char data);
+        bool blankFill(std::uint8_t data);
         
-        bool blankFill(unsigned char * const data, unsigned long sizeOfData);
+        bool blankFill(std::uint8_t * const data, std::uint32_t sizeOfData);
         
-        void blankFill(unsigned char * const data, unsigned long sizeOfData,
-                       unsigned long endAddress);
+        void blankFill(std::uint8_t * const data, std::uint32_t sizeOfData,
+                       std::uint32_t endAddress);
         
         bool blankFillRandom();
         
-        void blankFillRandom(unsigned long endAddress);
+        void blankFillRandom(std::uint32_t endAddress);
         
         bool blankFillAddressLowByte();
         
-        void blankFillAddressLowByte(unsigned long endAddress);
+        void blankFillAddressLowByte(std::uint32_t endAddress);
         
         /**********************************************************************/
         /*! \brief Returns number of unread warning messages.
@@ -926,7 +926,7 @@ class intelhex {
         *
         * \sa popNextWarning(), getNoErrors(), popNextError()
         ***********************************************************************/
-        unsigned long getNoWarnings()
+        std::uint32_t getNoWarnings()
         {
             return msgWarning.noOfWarnings;
         }
@@ -938,7 +938,7 @@ class intelhex {
         *
         * \sa popNextWarning(), getNoWarnings(), popNextError()
         ***********************************************************************/
-        unsigned long getNoErrors()
+        std::uint32_t getNoErrors()
         {
             return msgError.noOfErrors;
         }
@@ -956,7 +956,7 @@ class intelhex {
         *
         * \sa getNoWarnings(), getNoErrors(), popNextError()
         ***********************************************************************/
-        bool popNextWarning(string& warning)
+        bool popNextWarning(std::string& warning)
         {
             if (msgWarning.noOfWarnings > 0)
             {
@@ -987,7 +987,7 @@ class intelhex {
         *
         * \sa getNoWarnings(), getNoErrors(), popNextError()
         ***********************************************************************/
-        bool popNextError(string& error)
+        bool popNextError(std::string& error)
         {
             if (msgError.noOfErrors > 0)
             {
@@ -1046,7 +1046,7 @@ class intelhex {
         * \sa getStartSegmentAddress(), setStartSegmentAddress(), 
         *     setStartLinearAddress()
         ***********************************************************************/
-        bool getStartLinearAddress(unsigned long * eipRegister)
+        bool getStartLinearAddress(std::uint32_t * eipRegister)
         {
             if (startLinearAddress.exists == true)
             {
@@ -1086,7 +1086,7 @@ class intelhex {
         * \sa getStartSegmentAddress(), setStartSegmentAddress(), 
         *     getStartLinearAddress()
         ***********************************************************************/
-        void setStartLinearAddress(unsigned long eipRegister)
+        void setStartLinearAddress(std::uint32_t eipRegister)
         {
             startLinearAddress.eipRegister = eipRegister;
             startLinearAddress.exists = true;

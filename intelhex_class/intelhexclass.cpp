@@ -93,9 +93,9 @@ enum intelhexRecordType {
 /*******************************************************************************
 * Converts a 2 char string to its HEX value
 *******************************************************************************/
-unsigned char intelhex::stringToHex(string value)
+std::uint8_t intelhex::stringToHex(string value)
 {
-    unsigned char returnValue = 0;
+    std::uint8_t returnValue = 0;
     string::iterator valueIterator;
     
     if(value.length() == 2)
@@ -110,17 +110,17 @@ unsigned char intelhex::stringToHex(string value)
             if (*valueIterator >= '0' && *valueIterator <= '9')
             {
                 returnValue += 
-                               static_cast<unsigned char>(*valueIterator - '0');
+                               static_cast<std::uint8_t>(*valueIterator - '0');
             }
             else if (*valueIterator >= 'A' && *valueIterator <= 'F')
             {                
                 returnValue += 
-                          static_cast<unsigned char>(*valueIterator - 'A' + 10);
+                          static_cast<std::uint8_t>(*valueIterator - 'A' + 10);
             }
             else if (*valueIterator >= 'a' && *valueIterator <= 'f')
             {
                 returnValue += 
-                          static_cast<unsigned char>(*valueIterator - 'a' + 10);
+                          static_cast<std::uint8_t>(*valueIterator - 'a' + 10);
             }
             else
             {
@@ -154,9 +154,9 @@ unsigned char intelhex::stringToHex(string value)
 }
 
 /*******************************************************************************
-* Converts an unsigned long to a string in HEX format
+* Converts an std::uint32_t to a string in HEX format
 *******************************************************************************/
-string intelhex::ulToHexString(unsigned long value)
+string intelhex::ulToHexString(std::uint32_t value)
 {
     string returnString;
     char localString[50];
@@ -166,7 +166,7 @@ string intelhex::ulToHexString(unsigned long value)
 #ifdef _MSC_FULL_VER
     sprintf_s(localString, 49, "%08lX", value);
 #else
-    snprintf(localString, 49, "%08lX", value);
+    snprintf(localString, 49, "%08uX", value);
 #endif
 	
     returnString.insert(0, localString);
@@ -175,9 +175,9 @@ string intelhex::ulToHexString(unsigned long value)
 }
 
 /*******************************************************************************
-* Converts an unsigned long to a string in DEC format
+* Converts an std::uint32_t to a string in DEC format
 *******************************************************************************/
-string intelhex::ulToString(unsigned long value)
+string intelhex::ulToString(std::uint32_t value)
 {
     string returnString;
     char localString[50];
@@ -187,7 +187,7 @@ string intelhex::ulToString(unsigned long value)
 #ifdef _MSC_FULL_VER
     sprintf_s(localString, 49, "%lu", value);
 #else
-    snprintf(localString, 49, "%lu", value);
+    snprintf(localString, 49, "%u", value);
 #endif
     returnString.insert(0, localString);
 
@@ -195,9 +195,9 @@ string intelhex::ulToString(unsigned long value)
 }
 
 /*******************************************************************************
-* Converts an unsigned char to a string in HEX format
+* Converts an std::uint8_t to a string in HEX format
 *******************************************************************************/
-string intelhex::ucToHexString(unsigned char value)
+string intelhex::ucToHexString(std::uint8_t value)
 {
     string returnString;
     char localString[50];
@@ -252,22 +252,22 @@ void intelhex::addError(string errorMessage)
 /*******************************************************************************
 * Decodes a data record read in from a file
 *******************************************************************************/
-void intelhex::decodeDataRecord(unsigned char recordLength,
-                                unsigned long loadOffset,
+void intelhex::decodeDataRecord(std::uint8_t recordLength,
+                                std::uint32_t loadOffset,
                                 string::const_iterator data)
 {
     /* Variable to store a byte of the record as a two char string            */
     string sByteRead;
     
     /* Variable to store the byte of the record as an u.char                  */
-    unsigned char byteRead;
+    std::uint8_t byteRead;
     
     /* Calculate new SBA by clearing the low four bytes and then adding the   */
     /* current loadOffset for this line of Intel HEX data                     */
     segmentBaseAddress &= ~(0xFFFFUL);
     segmentBaseAddress += loadOffset;
     
-    for (unsigned char x = 0; x < recordLength; x ++)
+    for (std::uint8_t x = 0; x < recordLength; x ++)
     {
         sByteRead.erase();
         
@@ -279,7 +279,7 @@ void intelhex::decodeDataRecord(unsigned char recordLength,
         byteRead = stringToHex(sByteRead);
         
         ihReturn=ihContent.insert(
-                         pair<int,unsigned char>(segmentBaseAddress, byteRead)); 
+                         pair<int,std::uint8_t>(segmentBaseAddress, byteRead)); 
         
         if (ihReturn.second==false)
         {
@@ -325,15 +325,15 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
 	// Create an iterator for this variable
     string::iterator ihLineIterator;
     // Create a line counter
-    unsigned long lineCounter = 0;
+    std::uint32_t lineCounter = 0;
     // Variable to hold a single byte (two chars) of data
-    unsigned char byteRead;
+    std::uint8_t byteRead;
     // Variable to calculate the checksum for each line
-    unsigned char intelHexChecksum;
+    std::uint8_t intelHexChecksum;
     // Variable to hold the record length
-    unsigned char recordLength;
+    std::uint8_t recordLength;
     // Variable to hold the load offset
-    unsigned long loadOffset;
+    std::uint32_t loadOffset;
     // Variables to hold the record type
     intelhexRecordType recordType;
     
@@ -451,7 +451,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                 ihByte += *ihLineIterator;
                 ++ihLineIterator;
                 loadOffset = 
-                        static_cast<unsigned long>(ihLocal.stringToHex(ihByte));
+                        static_cast<std::uint32_t>(ihLocal.stringToHex(ihByte));
                 loadOffset <<= 8;
                 ihByte.erase();
                 ihByte = *ihLineIterator;
@@ -459,7 +459,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                 ihByte += *ihLineIterator;
                 ++ihLineIterator;
                 loadOffset += 
-                        static_cast<unsigned long>(ihLocal.stringToHex(ihByte));
+                        static_cast<std::uint32_t>(ihLocal.stringToHex(ihByte));
                 
                 /* Get the record type                                        */
                 ihByte.erase();
@@ -512,14 +512,14 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                         if (recordLength == 2)
                         {
                             /* Extract the two bytes of the ESA               */
-                            unsigned long extSegAddress = 0;
+                            std::uint32_t extSegAddress = 0;
                             
                             ihByte.erase();
                             ihByte = *ihLineIterator;
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extSegAddress = static_cast<unsigned long>
+                            extSegAddress = static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             extSegAddress <<= 8;
                             ihByte.erase();
@@ -527,7 +527,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extSegAddress += static_cast<unsigned long>
+                            extSegAddress += static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             
                             /* ESA is bits 4-19 of the segment base address   */
@@ -576,7 +576,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.csRegister = 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             ihLocal.startSegmentAddress.csRegister <<= 8;
                             ihByte.erase();
@@ -585,7 +585,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.csRegister += 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                                 
                             ihByte.erase();
@@ -594,7 +594,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.ipRegister = 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             ihLocal.startSegmentAddress.ipRegister <<= 8;
                             ihByte.erase();
@@ -603,7 +603,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startSegmentAddress.ipRegister += 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                         }
                         /* Note an error if the start seg. address already    */
@@ -657,14 +657,14 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                         if (recordLength == 2)
                         {
                             /* Extract the two bytes of the ELA               */
-                            unsigned long extLinAddress = 0;
+                            std::uint32_t extLinAddress = 0;
                             
                             ihByte.erase();
                             ihByte = *ihLineIterator;
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extLinAddress = static_cast<unsigned long>
+                            extLinAddress = static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             extLinAddress <<= 8;
                             ihByte.erase();
@@ -672,7 +672,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ++ihLineIterator;
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
-                            extLinAddress += static_cast<unsigned long>
+                            extLinAddress += static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             
                             /* ELA is bits 16-31 of the segment base address  */
@@ -718,7 +718,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister = 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             ihLocal.startLinearAddress.eipRegister <<= 8;
                             ihByte.erase();
@@ -727,7 +727,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister += 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             ihLocal.startLinearAddress.eipRegister <<= 8;
                             ihByte.erase();
@@ -736,7 +736,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister += 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                             ihLocal.startLinearAddress.eipRegister <<= 8;
                             ihByte.erase();
@@ -745,7 +745,7 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
                             ihByte += *ihLineIterator;
                             ++ihLineIterator;
                             ihLocal.startLinearAddress.eipRegister += 
-                            static_cast<unsigned long>
+                            static_cast<std::uint32_t>
                                                   (ihLocal.stringToHex(ihByte));
                         }
                         /* Note an error if the start seg. address already    */
@@ -842,13 +842,13 @@ istream& operator>>(istream& dataIn, intelhex& ihLocal)
 ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
 {
     /* Stores the address offset needed by the linear/segment address records */
-    unsigned long addressOffset;
+    std::uint32_t addressOffset;
     /* Iterator into the ihContent - where the addresses & data are stored    */
-    map<unsigned long, unsigned char>::iterator ihIterator;
+    map<std::uint32_t, std::uint8_t>::iterator ihIterator;
     /* Holds string that represents next record to be written                 */
     string thisRecord;
     /* Checksum calculation variable                                          */
-    unsigned char checksum;
+    std::uint8_t checksum;
     
     thisRecord.clear();
     
@@ -863,18 +863,18 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
         /* Construct the first record to define the segment base address      */
         if (ihLocal.segmentAddressMode == false)
         {
-            unsigned char dataByte;
+            std::uint8_t dataByte;
             
             addressOffset >>= 16;
             
             thisRecord = ":02000004";
             checksum = 0x02 + 0x04;
             
-            dataByte = static_cast<unsigned char>(addressOffset & 0xFF);
+            dataByte = static_cast<std::uint8_t>(addressOffset & 0xFF);
             checksum += dataByte;
             thisRecord += ihLocal.ucToHexString(dataByte);
             
-            dataByte = static_cast<unsigned char>((addressOffset >> 8) & 0xFF);
+            dataByte = static_cast<std::uint8_t>((addressOffset >> 8) & 0xFF);
             checksum += dataByte;
             thisRecord += ihLocal.ucToHexString(dataByte);
             
@@ -882,18 +882,18 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
         }
         else
         {
-            unsigned char dataByte;
+            std::uint8_t dataByte;
             
             addressOffset >>= 4;
             
             thisRecord = ":02000002";
             checksum = 0x02 + 0x02;
             
-            dataByte = static_cast<unsigned char>(addressOffset & 0xFF);
+            dataByte = static_cast<std::uint8_t>(addressOffset & 0xFF);
             checksum += dataByte;
             thisRecord += ihLocal.ucToHexString(dataByte);
             
-            dataByte = static_cast<unsigned char>((addressOffset >> 8) & 0xFF);
+            dataByte = static_cast<std::uint8_t>((addressOffset >> 8) & 0xFF);
             checksum += dataByte;
             thisRecord += ihLocal.ucToHexString(dataByte);
             
@@ -906,10 +906,10 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
         /* Now loop through all the available data and insert into file       */
         /* with maximum 16 bytes per line, and making sure to keep the        */
         /* segment base address up to date                                    */
-        vector<unsigned char> recordData;
-        unsigned long previousAddress;
-        unsigned long currentAddress;
-        unsigned long loadOffset;
+        vector<std::uint8_t> recordData;
+        std::uint32_t previousAddress;
+        std::uint32_t currentAddress;
+        std::uint32_t loadOffset;
         
         while(ihIterator != ihLocal.ihContent.end())
         {
@@ -921,7 +921,7 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
             {
                 if ((loadOffset >> 16) != addressOffset)
                 {
-                    unsigned char dataByte;
+                    std::uint8_t dataByte;
                     
                     thisRecord.clear();
                     checksum = 0;
@@ -932,11 +932,11 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
                     thisRecord = ":02000004";
                     checksum = 0x02 + 0x04;
                     
-                    dataByte = static_cast<unsigned char>(addressOffset & 0xFF);
+                    dataByte = static_cast<std::uint8_t>(addressOffset & 0xFF);
                     checksum += dataByte;
                     thisRecord += ihLocal.ucToHexString(dataByte);
                     
-                    dataByte = static_cast<unsigned char>((addressOffset >> 8) & 0xFF);
+                    dataByte = static_cast<std::uint8_t>((addressOffset >> 8) & 0xFF);
                     checksum += dataByte;
                     thisRecord += ihLocal.ucToHexString(dataByte);
                     
@@ -951,7 +951,7 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
             {
                 if ((loadOffset >> 4) != addressOffset)
                 {
-                    unsigned char dataByte;
+                    std::uint8_t dataByte;
                     
                     thisRecord.clear();
                     checksum = 0;
@@ -962,11 +962,11 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
                     thisRecord = ":02000002";
                     checksum = 0x02 + 0x02;
                     
-                    dataByte = static_cast<unsigned char>(addressOffset & 0xFF);
+                    dataByte = static_cast<std::uint8_t>(addressOffset & 0xFF);
                     checksum += dataByte;
                     thisRecord += ihLocal.ucToHexString(dataByte);
                     
-                    dataByte = static_cast<unsigned char>((addressOffset >> 8) & 0xFF);
+                    dataByte = static_cast<std::uint8_t>((addressOffset >> 8) & 0xFF);
                     checksum += dataByte;
                     thisRecord += ihLocal.ucToHexString(dataByte);
                     
@@ -1017,22 +1017,22 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
             /* Now we should have some data to encode; check first            */
             if (recordData.size() > 0)
             {
-                vector<unsigned char>::iterator itData;
-                unsigned char dataByte;
+                vector<std::uint8_t>::iterator itData;
+                std::uint8_t dataByte;
                 
                 /* Start building data record                                 */
                 thisRecord = ":";
                 
                 /* Start with the RECLEN record length                        */
-                dataByte = static_cast<unsigned char>(recordData.size());
+                dataByte = static_cast<std::uint8_t>(recordData.size());
                 thisRecord += ihLocal.ucToHexString(dataByte);
                 checksum += dataByte;
                 
                 /* Then the LOAD OFFSET                                       */
-                dataByte = static_cast<unsigned char>((loadOffset >> 8) & 0xFF);
+                dataByte = static_cast<std::uint8_t>((loadOffset >> 8) & 0xFF);
                 thisRecord += ihLocal.ucToHexString(dataByte);
                 checksum += dataByte;
-                dataByte = static_cast<unsigned char>(loadOffset & 0xFF);
+                dataByte = static_cast<std::uint8_t>(loadOffset & 0xFF);
                 thisRecord += ihLocal.ucToHexString(dataByte);
                 checksum += dataByte;
                 
@@ -1060,7 +1060,7 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
     /* If there is a segment start address, output the data                   */
     if (ihLocal.startSegmentAddress.exists == true)
     {
-        unsigned char dataByte;
+        std::uint8_t dataByte;
         
         thisRecord.clear();
         checksum = 0;
@@ -1068,19 +1068,19 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
         thisRecord = ":04000003";
         checksum = 0x04 + 0x03;
         
-        dataByte = static_cast<unsigned char>((ihLocal.startSegmentAddress.csRegister >> 8) & 0xFF);
+        dataByte = static_cast<std::uint8_t>((ihLocal.startSegmentAddress.csRegister >> 8) & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
-        dataByte = static_cast<unsigned char>(ihLocal.startSegmentAddress.csRegister & 0xFF);
+        dataByte = static_cast<std::uint8_t>(ihLocal.startSegmentAddress.csRegister & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
-        dataByte = static_cast<unsigned char>((ihLocal.startSegmentAddress.ipRegister >> 8) & 0xFF);
+        dataByte = static_cast<std::uint8_t>((ihLocal.startSegmentAddress.ipRegister >> 8) & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
-        dataByte = static_cast<unsigned char>(ihLocal.startSegmentAddress.ipRegister & 0xFF);
+        dataByte = static_cast<std::uint8_t>(ihLocal.startSegmentAddress.ipRegister & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
@@ -1095,7 +1095,7 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
     /* If there is a linear start address, output the data                    */
     if (ihLocal.startLinearAddress.exists == true)
     {
-        unsigned char dataByte;
+        std::uint8_t dataByte;
         
         thisRecord.clear();
         checksum = 0;
@@ -1103,19 +1103,19 @@ ostream& operator<<(ostream& dataOut, intelhex& ihLocal)
         thisRecord = ":04000005";
         checksum = 0x04 + 0x05;
         
-        dataByte = static_cast<unsigned char>((ihLocal.startLinearAddress.eipRegister >> 24) & 0xFF);
+        dataByte = static_cast<std::uint8_t>((ihLocal.startLinearAddress.eipRegister >> 24) & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
-        dataByte = static_cast<unsigned char>((ihLocal.startLinearAddress.eipRegister >> 16) & 0xFF);
+        dataByte = static_cast<std::uint8_t>((ihLocal.startLinearAddress.eipRegister >> 16) & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
-        dataByte = static_cast<unsigned char>((ihLocal.startLinearAddress.eipRegister >> 8) & 0xFF);
+        dataByte = static_cast<std::uint8_t>((ihLocal.startLinearAddress.eipRegister >> 8) & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
-        dataByte = static_cast<unsigned char>(ihLocal.startLinearAddress.eipRegister & 0xFF);
+        dataByte = static_cast<std::uint8_t>(ihLocal.startLinearAddress.eipRegister & 0xFF);
         checksum += dataByte;
         thisRecord += ihLocal.ucToHexString(dataByte);
         
