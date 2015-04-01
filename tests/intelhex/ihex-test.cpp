@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	// Create a string to store lines of Intel Hex info
 	std::string intelHexLine;
 	// Create a variable of the class we are testing
-	intelhex classTest;
+	intelhex::intelhex classTest;
 	
 	// Make class verbose
 	classTest.verboseOn();

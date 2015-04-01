@@ -18,3 +18,7 @@ foreach(filename ${TEST_SOURCES})
         COMMAND ${PROJECT_NAME} --gtest_filter=${testname}*
         WORKING_DIRECTORY .) 
 endforeach(filename ${SRC})
+
+add_executable(ihex-tester ihex-test.cpp)
+target_link_libraries(ihex-tester intelhex)
+target_include_directories(ihex-tester PUBLIC ../../intelhex_class)
