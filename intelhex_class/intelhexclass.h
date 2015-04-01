@@ -80,6 +80,10 @@
 *******************************************************************************/
 namespace intelhex {
     class intelhex {
+    public:
+        using container_t = std::map<std::uint32_t, std::uint8_t>;
+        using container_iterator_t = container_t::iterator;
+    private:
         /**********************************************************************/
         /*! \brief Output stream overload operator.
     *
@@ -122,7 +126,7 @@ namespace intelhex {
     * STL map holding the addresses found in the Intel HEX file and the
     * associated data byte stored at that address
     ***********************************************************************/
-        std::map<std::uint32_t, std::uint8_t> ihContent;
+        container_t ihContent;
 
         /**********************************************************************/
         /*! \brief Iterator for the container holding the decoded Intel HEX
@@ -132,7 +136,7 @@ namespace intelhex {
     * currently being used to read or write data. If no file has been
     * loaded into memory, it points to the start of ihContent.
     ***********************************************************************/
-        std::map<std::uint32_t, std::uint8_t>::iterator ihIterator;
+        container_iterator_t ihIterator;
 
         /**********************************************************************/
         /*! \brief Pair for the container holding the decoded Intel HEX content.
@@ -143,7 +147,7 @@ namespace intelhex {
     * can ensure that no address in a file is falsely assigned data more
     * than once.
     ***********************************************************************/
-        std::pair<std::map<std::uint32_t, std::uint8_t>::iterator, bool> ihReturn;
+        std::pair<container_iterator_t, bool> ihReturn;
 
         /**********************************************************************/
         /*! \brief Stores segment base address of Intel HEX file.
@@ -583,7 +587,7 @@ namespace intelhex {
             bool result = true;
 
             if (!ihContent.empty()) {
-                std::map<std::uint32_t, std::uint8_t>::iterator it \
+                container_iterator_t it \
  = ihContent.end();
 
                 --it;
@@ -617,7 +621,7 @@ namespace intelhex {
             bool result = false;
 
             if (ihContent.size() != 0) {
-                std::map<std::uint32_t, std::uint8_t>::iterator it;
+                container_iterator_t it;
                 it = ihContent.find(address);
                 if (it != ihContent.end()) {
                     result = true;
@@ -719,7 +723,7 @@ namespace intelhex {
     ***********************************************************************/
         bool startAddress(std::uint32_t *address) {
             if (ihContent.size() != 0) {
-                std::map<std::uint32_t, std::uint8_t>::iterator it;
+                container_iterator_t it;
 
                 it = ihContent.begin();
                 *address = (*it).first;
@@ -745,7 +749,7 @@ namespace intelhex {
     ***********************************************************************/
         bool endAddress(std::uint32_t *address) {
             if (ihContent.size() != 0) {
-                std::map<std::uint32_t, std::uint8_t>::reverse_iterator rit;
+                container_t::reverse_iterator rit;
 
                 rit = ihContent.rbegin();
                 *address = (*rit).first;
@@ -798,7 +802,7 @@ namespace intelhex {
     ***********************************************************************/
         bool getData(std::uint8_t *data, std::uint32_t address) {
             bool found = false;
-            std::map<std::uint32_t, std::uint8_t>::iterator localIterator;
+            container_iterator_t localIterator;
 
             if (!ihContent.empty()) {
                 localIterator = ihContent.find(address);

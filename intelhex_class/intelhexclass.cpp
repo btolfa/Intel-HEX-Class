@@ -220,31 +220,23 @@ void intelhex::decodeDataRecord(std::uint8_t recordLength,
 * Input Stream for Intel HEX File Decoding (friend function)
 *******************************************************************************/
 istream &operator>>(istream &dataIn, intelhex &ihLocal) {
-    // Create a string to store lines of Intel Hex info
-    string ihLine;
     /* Create a string to store a single byte of Intel HEX info               */
-    string ihByte;
-    // Create an iterator for this variable
-    string::iterator ihLineIterator;
     // Create a line counter
     std::uint32_t lineCounter = 0;
     // Variable to hold a single byte (two chars) of data
     std::uint8_t byteRead;
-    // Variable to calculate the checksum for each line
-    std::uint8_t intelHexChecksum;
     // Variable to hold the record length
-    std::uint8_t recordLength;
+    //std::uint8_t recordLength;
     // Variable to hold the load offset
-    std::uint32_t loadOffset;
+    //std::uint32_t loadOffset;
     // Variables to hold the record type
     intelhexRecordType recordType;
 
-    do {
-        /* Clear the string before this next round                            */
-        ihLine.erase();
 
-        /* Clear the checksum before processing this line                     */
-        intelHexChecksum = 0;
+    // A string to store lines of Intel Hex info
+    std::string ihLine;
+    do {
+        ihLine.clear();
 
         /* Get a line of data                                                 */
         dataIn >> ihLine;
@@ -254,143 +246,79 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
             /* Increment line counter                                         */
             lineCounter++;
 
-            /* Set string iterator to start of string                         */
-            ihLineIterator = ihLine.begin();
-
             /* Check that we have a ':' record mark at the beginning          */
-            if (*ihLineIterator != ':') {
-                /* Add some warning code here                                 */
-                string message;
-
-                message = "Line without record mark ':' found @ line " + std::to_string(lineCounter);
-
-                ihLocal.addWarning(message);
+            if (ihLine.front() != ':') {
+                ihLocal.addWarning("Line without record mark ':' found @ line " + std::to_string(lineCounter));
 
                 /* If this is the first line, let's simply give up. Chances   */
                 /* are this is not an Intel HEX file at all                   */
                 if (lineCounter == 1) {
-                    message = "Intel HEX File decode aborted; ':' missing in " \
-                              "first line.";
-                    ihLocal.addError(message);
+                    ihLocal.addError("Intel HEX File decode aborted; ':' missing in first line.");
 
                     /* Erase ihLine content and break out of do...while loop  */
-                    ihLine.erase();
+                    ihLine.clear();
                     break;
                 }
-            }
-            else {
+            }else {
                 /* Remove the record mark from the string as we don't need it */
                 /* anymore                                                    */
-                ihLine.erase(ihLineIterator);
+                ihLine.erase(ihLine.begin());
             }
 
-            /* Run through the whole line to check the checksum               */
-            for (ihLineIterator = ihLine.begin();
-                 ihLineIterator != ihLine.end();
-                /* Nothing - really! */ ) {
-                /* Convert the line in pair of chars (making a single byte)   */
-                /* into single bytes, and then add to the checksum variable.  */
-                /* By adding all the bytes in a line together *including* the */
-                /* checksum byte, we should get a result of '0' at the end.   */
-                /* If not, there is a checksum error                          */
-                ihByte.erase();
-
-                ihByte = *ihLineIterator;
-                ++ihLineIterator;
-                /* Just in case there are an odd number of chars in the       */
-                /* just check we didn't reach the end of the string early     */
-                if (ihLineIterator != ihLine.end()) {
-                    ihByte += *ihLineIterator;
-                    ++ihLineIterator;
-
-                    byteRead = std::stoul(ihByte, 0, 16);
-
+            if (ihLine.length() % 2) {
+                // Odd number of charactes in line
+                ihLocal.addError("Odd number of characters in line " + std::to_string(lineCounter));
+            } else {
+                std::uint8_t intelHexChecksum = 0;
+                /* Run through the whole line to check the checksum               */
+                for (auto it = ihLine.cbegin(); it != ihLine.cend(); it+=2) {
+                    byteRead = std::stoul(std::string(it, it+2), 0, 16);
                     intelHexChecksum += byteRead;
                 }
-                else {
-                    string message;
 
-                    message = "Odd number of characters in line " +
-                              std::to_string(lineCounter);
+                // Make sure the checksum was ok
+                if (intelHexChecksum) {
+                    ihLocal.addError(
+                            "Checksum error @ line " + std::to_string(lineCounter) + "; calculated 0x"
+                                    + ihLocal.ucToHexString(intelHexChecksum - byteRead) + " expected 0x"
+                                    + ihLocal.ucToHexString(byteRead));
+                } else {
+                    /* Reset iterator back to beginning of the line so we can now */
+                    /* decode it                                                  */
+                    auto it = ihLine.begin();
 
-                    ihLocal.addError(message);
-                }
-            }
+                    /* Get the record length                                      */
+                    std::uint8_t recordLength = std::stoul(std::string(it, it+2), 0, 16);
+                    it+=2;
 
-            /* Make sure the checksum was ok                                  */
-            if (intelHexChecksum == 0) {
-                /* Reset iterator back to beginning of the line so we can now */
-                /* decode it                                                  */
-                ihLineIterator = ihLine.begin();
+                    /* Get the load offset (2 bytes)                              */
+                    std::uint32_t loadOffset = std::stoul(std::string(it, it+4), 0, 16);
+                    it+=4;
 
-                /* Clear all the variables associated with decoding a line of */
-                /* Intel HEX code.                                            */
-                recordLength = 0;
-                loadOffset = 0;
+                    /* Get the record type                                        */
+                    recordType = static_cast<intelhexRecordType>(std::stoul(std::string(it, it+2), 0, 16));
+                    it+=2;
 
-                /* Get the record length                                      */
-                ihByte.erase();
-                ihByte = *ihLineIterator;
-                ++ihLineIterator;
-                ihByte += *ihLineIterator;
-                ++ihLineIterator;
-                recordLength = std::stoul(ihByte, 0, 16);
-
-                /* Get the load offset (2 bytes)                              */
-                ihByte.erase();
-                ihByte = *ihLineIterator;
-                ++ihLineIterator;
-                ihByte += *ihLineIterator;
-                ++ihLineIterator;
-                loadOffset =
-                        std::stoul(ihByte, 0, 16);
-                loadOffset <<= 8;
-                ihByte.erase();
-                ihByte = *ihLineIterator;
-                ++ihLineIterator;
-                ihByte += *ihLineIterator;
-                ++ihLineIterator;
-                loadOffset +=
-                        std::stoul(ihByte, 0, 16);
-
-                /* Get the record type                                        */
-                ihByte.erase();
-                ihByte = *ihLineIterator;
-                ++ihLineIterator;
-                ihByte += *ihLineIterator;
-                ++ihLineIterator;
-                recordType =
-                        static_cast<intelhexRecordType>(std::stoul(ihByte, 0, 16));
-
-                /* Decode the INFO or DATA portion of the record              */
-                switch (recordType) {
+                    /* Decode the INFO or DATA portion of the record              */
+                    switch (recordType) {
                     case DATA_RECORD:
-                        ihLocal.decodeDataRecord(recordLength, loadOffset,
-                                                 ihLineIterator);
+                        ihLocal.decodeDataRecord(recordLength, loadOffset, it);
                         if (ihLocal.verbose) {
-                            cout << "Data Record begining @ 0x" <<
-                            ihLocal.ulToHexString(loadOffset) << endl;
+                            cout << "Data Record begining @ 0x" << ihLocal.ulToHexString(loadOffset) << endl;
                         }
                         break;
 
                     case END_OF_FILE_RECORD:
                         /* Check that the EOF record wasn't already found. If */
                         /* it was, generate appropriate error                 */
-                        if (! ihLocal.foundEof) {
+                        if (!ihLocal.foundEof) {
                             ihLocal.foundEof = true;
-                        }
-                        else {
-                            string message;
-
-                            message = "Additional End Of File record @ line " +
-                                      std::to_string(lineCounter) +
-                                      " found.";
-
-                            ihLocal.addError(message);
+                        } else {
+                            ihLocal.addError("Additional End Of File record @ line " + std::to_string(lineCounter) + " found.");
                         }
                         /* Generate error if there were                       */
                         if (ihLocal.verbose) {
-                            cout << "End of File" << endl;
+                            cout << "End of File\n";
                         }
                         break;
 
@@ -398,21 +326,8 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         /* Make sure we have 2 bytes of data                  */
                         if (recordLength == 2) {
                             /* Extract the two bytes of the ESA               */
-                            std::uint32_t extSegAddress = 0;
-
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            extSegAddress = std::stoul(ihByte, 0, 16);
-                            extSegAddress <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            extSegAddress += std::stoul(ihByte, 0, 16);
+                            std::uint32_t extSegAddress = std::stoul(std::string(it, it+4), 0, 16);
+                            it+=4;
 
                             /* ESA is bits 4-19 of the segment base address   */
                             /* (SBA), so shift left 4 bits                    */
@@ -420,21 +335,13 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
 
                             /* Update the SBA                                 */
                             ihLocal.segmentBaseAddress = extSegAddress;
-                        }
-                        else {
+                        } else {
                             /* Note the error                                 */
-                            string message;
-
-                            message = "Extended Segment Address @ line " +
-                                      std::to_string(lineCounter) +
-                                      " not 2 bytes as required.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Extended Segment Address @ line " + std::to_string(lineCounter) + " not 2 bytes as required.");
                         }
                         if (ihLocal.verbose) {
-                            cout << "Ext. Seg. Address found: 0x" <<
-                            ihLocal.ulToHexString(ihLocal.segmentBaseAddress)
-                            << endl;
+                            cout << "Ext. Seg. Address found: 0x" << ihLocal.ulToHexString(ihLocal.segmentBaseAddress)
+                                    << "\n";
                         }
 
                         break;
@@ -442,86 +349,40 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     case START_SEGMENT_ADDRESS:
                         /* Make sure we have 4 bytes of data, and that no     */
                         /* Start Segment Address has been found to date       */
-                        if (recordLength == 4 &&
-                                (! ihLocal.startSegmentAddress.exists)) {
+                        if (recordLength == 4 && (!ihLocal.startSegmentAddress.exists)) {
                             /* Note that the Start Segment Address has been   */
                             /* found.                                         */
                             ihLocal.startSegmentAddress.exists = true;
-                            /* Clear the two registers, just in case          */
-                            ihLocal.startSegmentAddress.csRegister = 0;
-                            ihLocal.startSegmentAddress.ipRegister = 0;
 
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startSegmentAddress.csRegister =
-                                    std::stoul(ihByte, 0, 16);
-                            ihLocal.startSegmentAddress.csRegister <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startSegmentAddress.csRegister +=
-                                    std::stoul(ihByte, 0, 16);
+                            ihLocal.startSegmentAddress.csRegister = std::stoul(std::string(it, it+4), 0, 16);
+                            it+=4;
 
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startSegmentAddress.ipRegister =
-                                    std::stoul(ihByte, 0, 16);
-                            ihLocal.startSegmentAddress.ipRegister <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startSegmentAddress.ipRegister +=
-                                    std::stoul(ihByte, 0, 16);
+                            ihLocal.startSegmentAddress.ipRegister = std::stoul(std::string(it, it+4), 0, 16);
+                            it+=4;
                         }
-                            /* Note an error if the start seg. address already    */
-                            /* exists                                             */
+                        /* Note an error if the start seg. address already    */
+                        /* exists                                             */
                         else if (ihLocal.startSegmentAddress.exists) {
-                            string message;
-
-                            message = "Start Segment Address record appears again @ line " +
-                                      std::to_string(lineCounter) +
-                                      "; repeated record ignored.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Start Segment Address record appears again @ line " + std::to_string(lineCounter)
+                            + "; repeated record ignored.");
                         }
                         /* Note an error if the start lin. address already    */
                         /* exists as they should be mutually exclusive        */
                         if (ihLocal.startLinearAddress.exists) {
-                            string message;
-
-                            message = "Start Segment Address record found @ line " +
-                                      std::to_string(lineCounter) +
-                                      " but Start Linear Address already exists.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Start Segment Address record found @ line " + std::to_string(lineCounter)
+                            + " but Start Linear Address already exists.");
                         }
                         /* Note an error if the record lenght is not 4 as     */
                         /* expected                                           */
                         if (recordLength != 4) {
-                            string message;
-
-                            message = "Start Segment Address @ line " +
-                                      std::to_string(lineCounter) +
-                                      " not 4 bytes as required.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Start Segment Address @ line " + std::to_string(lineCounter)
+                            + " not 4 bytes as required.");
                         }
+
                         if (ihLocal.verbose) {
-                            cout << "Start Seg. Address - CS 0x" <<
-                            ihLocal.ulToHexString(ihLocal.startSegmentAddress.csRegister) <<
-                            " IP 0x" <<
-                            ihLocal.ulToHexString(ihLocal.startSegmentAddress.ipRegister)
-                            << endl;
+                            cout << "Start Seg. Address - CS 0x"
+                                    << ihLocal.ulToHexString(ihLocal.startSegmentAddress.csRegister) << " IP 0x"
+                                    << ihLocal.ulToHexString(ihLocal.startSegmentAddress.ipRegister) << "\n";
                         }
                         break;
 
@@ -529,21 +390,8 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         /* Make sure we have 2 bytes of data                  */
                         if (recordLength == 2) {
                             /* Extract the two bytes of the ELA               */
-                            std::uint32_t extLinAddress = 0;
-
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            extLinAddress = std::stoul(ihByte, 0, 16);
-                            extLinAddress <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            extLinAddress += std::stoul(ihByte, 0, 16);
+                            std::uint32_t extLinAddress = std::stoul(std::string(it, it+4), 0, 16);
+                            it+=4;
 
                             /* ELA is bits 16-31 of the segment base address  */
                             /* (SBA), so shift left 16 bits                   */
@@ -551,142 +399,67 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
 
                             /* Update the SBA                                 */
                             ihLocal.segmentBaseAddress = extLinAddress;
-                        }
-                        else {
+                        } else {
                             /* Note the error                                 */
                             //cout << "Error in Ext. Lin. Address" << endl;
-
-                            string message;
-
-                            message = "Extended Linear Address @ line " +
-                                      std::to_string(lineCounter) +
-                                      " not 2 bytes as required.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Extended Linear Address @ line " + std::to_string(lineCounter)
+                            + " not 2 bytes as required.");
                         }
+
                         if (ihLocal.verbose) {
-                            cout << "Ext. Lin. Address 0x" <<
-                            ihLocal.ulToHexString(ihLocal.segmentBaseAddress)
-                            << endl;
+                            cout << "Ext. Lin. Address 0x" << ihLocal.ulToHexString(ihLocal.segmentBaseAddress) << "\n";
                         }
 
                         break;
 
                     case START_LINEAR_ADDRESS:
                         /* Make sure we have 4 bytes of data                  */
-                        if (recordLength == 4 &&
-                                (!ihLocal.startLinearAddress.exists)) {
+                        if (recordLength == 4 && (!ihLocal.startLinearAddress.exists)) {
                             /* Extract the four bytes of the SLA              */
-                            ihLocal.startLinearAddress.eipRegister = 0;
-
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startLinearAddress.eipRegister =
-                                    std::stoul(ihByte, 0, 16);
-                            ihLocal.startLinearAddress.eipRegister <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startLinearAddress.eipRegister +=
-                                    std::stoul(ihByte, 0, 16);
-                            ihLocal.startLinearAddress.eipRegister <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startLinearAddress.eipRegister +=
-                                    std::stoul(ihByte, 0, 16);
-                            ihLocal.startLinearAddress.eipRegister <<= 8;
-                            ihByte.erase();
-                            ihByte = *ihLineIterator;
-                            ++ihLineIterator;
-                            ihByte += *ihLineIterator;
-                            ++ihLineIterator;
-                            ihLocal.startLinearAddress.eipRegister +=
-                                    std::stoul(ihByte, 0, 16);
+                            ihLocal.startLinearAddress.eipRegister = std::stoul(std::string(it, it+8), 0, 16);
+                            it+=8;
                         }
-                            /* Note an error if the start seg. address already    */
-                            /* exists                                             */
+                        /* Note an error if the start seg. address already    */
+                        /* exists                                             */
                         else if (ihLocal.startLinearAddress.exists) {
-                            string message;
-
-                            message = "Start Linear Address record appears again @ line " +
-                                      std::to_string(lineCounter) +
-                                      "; repeated record ignored.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Start Linear Address record appears again @ line " + std::to_string(lineCounter)
+                            + "; repeated record ignored.");
                         }
                         /* Note an error if the start seg. address already    */
                         /* exists as they should be mutually exclusive        */
                         if (ihLocal.startSegmentAddress.exists) {
-                            string message;
-
-                            message = "Start Linear Address record found @ line " +
-                                      std::to_string(lineCounter) +
-                                      " but Start Segment Address already exists.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Start Linear Address record found @ line " + std::to_string(lineCounter)
+                            + " but Start Segment Address already exists.");
                         }
                         /* Note an error if the record lenght is not 4 as     */
                         /* expected                                           */
                         if (recordLength != 4) {
-                            string message;
-
-                            message = "Start Linear Address @ line " +
-                                      std::to_string(lineCounter) +
-                                      " not 4 bytes as required.";
-
-                            ihLocal.addError(message);
+                            ihLocal.addError("Start Linear Address @ line " + std::to_string(lineCounter)
+                            + " not 4 bytes as required.");
                         }
                         if (ihLocal.verbose) {
-                            cout << "Start Lin. Address - EIP 0x" <<
-                            ihLocal.ulToHexString(ihLocal.startLinearAddress.eipRegister)
-                            << endl;
+                            cout << "Start Lin. Address - EIP 0x"
+                                    << ihLocal.ulToHexString(ihLocal.startLinearAddress.eipRegister) << "\n";
                         }
                         break;
 
                     default:
                         /* Handle the error here                              */
                         if (ihLocal.verbose) {
-                            cout << "Unknown Record @ line " <<
-                            std::to_string(lineCounter) << endl;
+                            cout << "Unknown Record @ line " << std::to_string(lineCounter) << "\n";
                         }
 
-
-                        string message;
-
-                        message = "Unknown Intel HEX record @ line " +
-                                  std::to_string(lineCounter);
-
-                        ihLocal.addError(message);
+                        ihLocal.addError("Unknown Intel HEX record @ line " + std::to_string(lineCounter));
 
                         break;
+                    }
                 }
-            }
-            else {
-                /* Note that the checksum contained an error                  */
-                string message;
-
-                message = "Checksum error @ line " +
-                          std::to_string(lineCounter) +
-                          "; calculated 0x" +
-                          ihLocal.ucToHexString(intelHexChecksum - byteRead) +
-                          " expected 0x" +
-                          ihLocal.ucToHexString(byteRead);
-
-                ihLocal.addError(message);
             }
         }
     } while (ihLine.length() > 0);
 
     if (ihLocal.verbose) {
-        cout << "Decoded " << lineCounter << " lines from file." << endl;
+        cout << "Decoded " << lineCounter << " lines from file.\n";
     }
 
     return (dataIn);
@@ -699,7 +472,7 @@ ostream &operator<<(ostream &dataOut, intelhex &ihLocal) {
     /* Stores the address offset needed by the linear/segment address records */
     std::uint32_t addressOffset;
     /* Iterator into the ihContent - where the addresses & data are stored    */
-    map<std::uint32_t, std::uint8_t>::iterator ihIterator;
+    intelhex::container_iterator_t ihIterator;
     /* Holds string that represents next record to be written                 */
     string thisRecord;
     /* Checksum calculation variable                                          */
