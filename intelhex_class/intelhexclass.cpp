@@ -75,8 +75,8 @@ namespace intelhex {
 *
 * List of all possible record types that can be found in an Intel HEX file.
 *******************************************************************************/
-enum intelhexRecordType {
-    DATA_RECORD,
+enum class RecordType : std::uint8_t {
+    DATA_RECORD = 0x00,
     END_OF_FILE_RECORD,
     EXTENDED_SEGMENT_ADDRESS,
     START_SEGMENT_ADDRESS,
@@ -162,7 +162,7 @@ void intelhex::addError(string errorMessage) {
 *******************************************************************************/
 void intelhex::decodeDataRecord(std::uint8_t recordLength,
                                 std::uint32_t loadOffset,
-                                string::const_iterator data) {
+                                string::const_iterator it) {
     /* Variable to store a byte of the record as a two char string            */
     string sByteRead;
 
@@ -175,39 +175,25 @@ void intelhex::decodeDataRecord(std::uint8_t recordLength,
     segmentBaseAddress += loadOffset;
 
     for (std::uint8_t x = 0; x < recordLength; x++) {
-        sByteRead.erase();
-
-        sByteRead = *data;
-        data++;
-        sByteRead += *data;
-        data++;
+        sByteRead = std::string(it, it+2);
+        it+=2;
 
         byteRead = std::stoul(sByteRead, 0, 16);
 
-        ihReturn = ihContent.insert(
-                pair<int, std::uint8_t>(segmentBaseAddress, byteRead));
+        ihReturn = ihContent.emplace(make_pair(segmentBaseAddress, byteRead));
 
         if (! ihReturn.second) {
             /* If this address already contains the byte we are trying to     */
             /* write, this is only a warning                                  */
             if (ihReturn.first->second == byteRead) {
-                string message;
-
-                message = "Location 0x" + ulToHexString(segmentBaseAddress) +
-                          " already contains data 0x" + sByteRead;
-
-                addWarning(message);
-            }
+                addWarning("Location 0x" + ulToHexString(segmentBaseAddress) +
+                        " already contains data 0x" + sByteRead);
+            } else {
                 /* Otherwise this is an error                                     */
-            else {
-                string message;
-
-                message = "Couldn't add 0x" + sByteRead + " @ 0x" +
-                          ulToHexString(segmentBaseAddress) +
-                          "; already contains 0x" +
-                          ucToHexString(ihReturn.first->second);
-
-                addError(message);
+                addError("Couldn't add 0x" + sByteRead + " @ 0x" +
+                        ulToHexString(segmentBaseAddress) +
+                        "; already contains 0x" +
+                        ucToHexString(ihReturn.first->second));
             }
         }
 
@@ -230,7 +216,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
     // Variable to hold the load offset
     //std::uint32_t loadOffset;
     // Variables to hold the record type
-    intelhexRecordType recordType;
+    RecordType recordType;
 
 
     // A string to store lines of Intel Hex info
@@ -296,19 +282,19 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     it+=4;
 
                     /* Get the record type                                        */
-                    recordType = static_cast<intelhexRecordType>(std::stoul(std::string(it, it+2), 0, 16));
+                    recordType = static_cast<RecordType>(std::stoul(std::string(it, it+2), 0, 16));
                     it+=2;
 
                     /* Decode the INFO or DATA portion of the record              */
                     switch (recordType) {
-                    case DATA_RECORD:
+                    case RecordType::DATA_RECORD:
                         ihLocal.decodeDataRecord(recordLength, loadOffset, it);
                         if (ihLocal.verbose) {
                             cout << "Data Record begining @ 0x" << ihLocal.ulToHexString(loadOffset) << endl;
                         }
                         break;
 
-                    case END_OF_FILE_RECORD:
+                    case RecordType::END_OF_FILE_RECORD:
                         /* Check that the EOF record wasn't already found. If */
                         /* it was, generate appropriate error                 */
                         if (!ihLocal.foundEof) {
@@ -322,7 +308,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         }
                         break;
 
-                    case EXTENDED_SEGMENT_ADDRESS:
+                    case RecordType::EXTENDED_SEGMENT_ADDRESS:
                         /* Make sure we have 2 bytes of data                  */
                         if (recordLength == 2) {
                             /* Extract the two bytes of the ESA               */
@@ -346,7 +332,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
 
                         break;
 
-                    case START_SEGMENT_ADDRESS:
+                    case RecordType::START_SEGMENT_ADDRESS:
                         /* Make sure we have 4 bytes of data, and that no     */
                         /* Start Segment Address has been found to date       */
                         if (recordLength == 4 && (!ihLocal.startSegmentAddress.exists)) {
@@ -386,7 +372,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                         }
                         break;
 
-                    case EXTENDED_LINEAR_ADDRESS:
+                    case RecordType::EXTENDED_LINEAR_ADDRESS:
                         /* Make sure we have 2 bytes of data                  */
                         if (recordLength == 2) {
                             /* Extract the two bytes of the ELA               */
@@ -412,7 +398,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
 
                         break;
 
-                    case START_LINEAR_ADDRESS:
+                    case RecordType::START_LINEAR_ADDRESS:
                         /* Make sure we have 4 bytes of data                  */
                         if (recordLength == 4 && (!ihLocal.startLinearAddress.exists)) {
                             /* Extract the four bytes of the SLA              */
