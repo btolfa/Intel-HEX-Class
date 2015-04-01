@@ -211,13 +211,6 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
     std::uint32_t lineCounter = 0;
     // Variable to hold a single byte (two chars) of data
     std::uint8_t byteRead;
-    // Variable to hold the record length
-    //std::uint8_t recordLength;
-    // Variable to hold the load offset
-    //std::uint32_t loadOffset;
-    // Variables to hold the record type
-    RecordType recordType;
-
 
     // A string to store lines of Intel Hex info
     std::string ihLine;
@@ -271,7 +264,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                 } else {
                     /* Reset iterator back to beginning of the line so we can now */
                     /* decode it                                                  */
-                    auto it = ihLine.begin();
+                    auto it = ihLine.cbegin();
 
                     /* Get the record length                                      */
                     std::uint8_t recordLength = std::stoul(std::string(it, it+2), 0, 16);
@@ -282,7 +275,7 @@ istream &operator>>(istream &dataIn, intelhex &ihLocal) {
                     it+=4;
 
                     /* Get the record type                                        */
-                    recordType = static_cast<RecordType>(std::stoul(std::string(it, it+2), 0, 16));
+                    auto recordType = static_cast<RecordType>(std::stoul(std::string(it, it+2), 0, 16));
                     it+=2;
 
                     /* Decode the INFO or DATA portion of the record              */
